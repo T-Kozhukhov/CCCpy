@@ -1,8 +1,8 @@
-# CCC
-Custom Crowds in C++. Software designed to simulate dense crowds of a single species using the Vicsek model.
+# CCCpy
+Custom Crowds in C++ for Python. A fork of the CCC software designed to be controlled from Python at the system level using Pybind11.
 
 ## System Prerequisites
-Primarily designed for Ubuntu Linux however works on Windows via WSL and MacOS. Only tested using the g++ compiler. 
+Designed for UNIX systems and has been tested to work on Ubuntu Linux, Ubuntu via WSL, and MacOS. Only tested using the g++ compiler. 
 
 To compile and use the program, the following must be installed:
 - CMake. Set to require version 3.1 or above but easily changed by an experienced user.
@@ -14,7 +14,12 @@ GSL and VTK can be installed on Ubuntu using the following top-level packages:
 libgsl-dev
 libvtk6-dev
 ```
-Output .vtp visualisation files can be read using the ParaView software.
+Output .vtp visualisation files can be read using the ParaView software.#
 
-## Running the program
-To test run the program I suggest copying the contents of the TESTCASE folder to the same directory as the program and then running the RunMe bash script. An Experiment sub-folder will be created, with .vtp files stored within Experiment/VTP/
+## Compiling the Python Binary 
+TODO: Write guide entry on how to compile the Python Binary
+
+## Usage and Tutorial
+TODO: Write guide on general usage, and a rough top level tutorial on how to get a basic simulation going. 
+
+TODO: Perhaps provide full documentation on what bindings are available in a seperate file/ wiki? Make sure build in Python docs work!!!
