@@ -14,7 +14,9 @@ GSL and VTK can be installed on Ubuntu using the following top-level packages:
 libgsl-dev
 libvtk6-dev
 ```
-Output .vtp visualisation files can be read using the ParaView software.#
+Output .vtp visualisation files can be read using the ParaView software.
+
+Pybind11 is included as part of the repo. 
 
 ## Compiling the Python Binary 
 TODO: Write guide entry on how to compile the Python Binary
