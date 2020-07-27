@@ -12,10 +12,23 @@
 
 class System
 {
-    public:
-        System(physParam param);
+    public: //functions in here are those that will be bound in the end
+        System(physParam param); /// TODO: Rewrite constructor to instead have a default physParam 
         virtual ~System();
 
+        /// TODO: function to set up experiment format directories?
+        /// TODO: function to set up loading particle data
+        /// TODO: function to set verbosity
+        /// TODO: test how the cmdout clas works in pybind
+
+        /// TODO: grouped functions for handling the physParam, ensure they only work when the simulation is not prepped
+        /// TODO: function to "prepare simulation", which should init particles, set mass radius ratio, 
+                // configure managers (see orig constructor), dump pList and params
+        /// TODO: function to set up dumping of single file (can only work when sim not prepared)
+
+        /// TODO: make a runSimulation function which runs N timesteps and then dumps visualiser data, 
+                /// should keep track of which total timestep it's on so it can dump partData correctly. Only runs 
+                /// after sim is prepped
         void runSimulation(); // begins the simulation according to sysParam
 
     private:
