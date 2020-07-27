@@ -2,8 +2,19 @@
 #include "csv.h"
 #include "cmdout.h"
 
+System::System(){
+    //ctor for python class
+    simulationBegun = false; //set simReady and simBegin to false to start with
+    simulationReady = false;    
+    personList = std::vector<person>(0);
+
+    //set up default physParam parameters here
+    ///TODO: set default physParam parameters here
+}
+
 System::System(physParam param)
 {
+    ///TODO: not needed in python binaries, remove later
     //ctor
     sysParam = param;
     simulationBegun = false;
@@ -33,7 +44,33 @@ System::~System()
     }
 }
 
+void System::prepareSimulation(){
+    // prepares the simulation as the old CCC system class constructor used to do
+    person::setMassRadiusRatio(sysParam.massRadiusRatio); //set the mass-radius ratio of particles now before any are generated
+
+    //handling boundary stuff here
+    bManager = boundaryManager(sysParam.periodic, sysParam.L_x, sysParam.L_y);
+
+    //preparing fManager and tManager by getting the necessary parameters from sysParam
+    fManager = force(&bManager, sysParam.zetaActive, sysParam.zetaGround, sysParam.zetaPerson,
+        sysParam.v_0, sysParam.kHarmonic, sysParam.kHertzian);
+    tManager = planarTorque(sysParam.xiAngular, sysParam.xiPair, sysParam.zetaPolar,
+        sysParam.zetaVelocity);
+
+    //setup of output manager
+    vtpDumper = output(sysParam.outFileName, sysParam.outDirPath, sysParam.outFileType, &personList);
+
+    initParticles(); //init particles at this point
+
+    //perform exporting
+    csv::exportPList(personList, sysParam.pathToLoadingCSV+"initPartData.csv", sysParam.meanR); //exports the IC data for potential later usage
+    csv::exportPhysParam(sysParam, sysParam.pathToLoadingCSV); //export the sysParam we have at this point for later usage
+
+    simulationReady = true; //at this point it's safe to run the simulation
+}
+
 void System::runSimulation(){
+    /// TODO: function is not needed in python binaries, remove later
     cmdout::cmdWrite(false, "Preparing simulation");
 
     initParticles(); //initialise particles
