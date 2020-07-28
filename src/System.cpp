@@ -23,12 +23,10 @@ System::System(){
     //TODO: Is the above necessary to bind?
 
     //output information
-    sysParam.outputSteps = 1000; // after how many steps should you output?
-    //TODO: Is the above necessary to bind?
+    sysParam.outputSteps = 1000; // after how many steps should you output? NOT BOUND
     sysParam.outDirPath = "./VTP/"; //path to output directory
     sysParam.outFileName = "VisualiserData"; //what file to store data into. .vtp extension should NOT be included
-    sysParam.outFileType = "vtp"; //file tpye to save as (should be vtp, no dots)
-    //TODO: Is the above necessary to bind?
+    sysParam.outFileType = "vtp"; //file tpye to save as (should be vtp, no dots) NOT BOUND
 
     //particle properties
     sysParam.N = 300; //if randomly generating particles, this is how many to generate
@@ -254,7 +252,7 @@ void System::initParticles(){
 void System::step(int t){
     //We do all dumping before we do maths.
     //check to see if we should output on this step or not
-    if (t%sysParam.outputSteps == 0){ ///TODO: remove
+    if (t%sysParam.outputSteps == 0){ ///TODO: remove 
         vtpDumper.dump(t);
     }
 
