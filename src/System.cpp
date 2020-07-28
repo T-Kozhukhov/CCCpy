@@ -17,6 +17,74 @@ System::System(){
 
     //set up default physParam parameters here
     ///TODO: set default physParam parameters here
+    //step properties
+    sysParam.stepSize = 0.01; // step size in seconds
+    sysParam.stepMax = 100000; // how many steps the simulation should run for 
+    //TODO: Is the above necessary to bind?
+
+    //output information
+    sysParam.outputSteps = 1000; // after how many steps should you output?
+    //TODO: Is the above necessary to bind?
+    sysParam.outDirPath = "./VTP/"; //path to output directory
+    sysParam.outFileName = "VisualiserData"; //what file to store data into. .vtp extension should NOT be included
+    sysParam.outFileType = "vtp"; //file tpye to save as (should be vtp, no dots)
+    //TODO: Is the above necessary to bind?
+
+    //particle properties
+    sysParam.N = 300; //if randomly generating particles, this is how many to generate
+    sysParam.meanR = 1; // mean radius
+    sysParam.v_0 = 0.05; // active velocity parameter
+    sysParam.sigmaR = 0.1; // standard deviation of the radius
+    sysParam.sigmaV = 0; // standard deviation for when generating gaussian velocities
+    sysParam.massRadiusRatio = 1; //ratio of particle mass to radius used for finding mass of particles
+
+    //boundary consts
+    sysParam.periodic = true; // is the boundary periodic or no?
+    sysParam.L_x = 40;
+    sysParam.L_y = 40;
+    sysParam.overlapRatio = 0; //overlap ratio if the boundary is not periodic
+
+    //csv information
+    sysParam.loadParticles = false; // whether to load particles or not
+    sysParam.pathToParticles = ""; //full file path to csv containing particle information
+    sysParam.pathToLoadingCSV = "./"; //file path to where the physParam, init particle state, and single file is dumped
+    sysParam.particleDumpSteps = 0; //after how many steps to dump particle data. 0 for no dumping
+    sysParam.pathToParticleData = "./ParticleData/"; //file path to the directory where particle data should be stored
+    sysParam.dumpSingleParticle = false; //whether to dump a single particle or not
+
+    //force bools - Do we want to consider the following forces in our sim, yay or nay?
+    sysParam.enableHarmonicInterForce = false;
+    sysParam.enableHertzianInterForce = false;
+    sysParam.enableActiveForce = false;
+    sysParam.enableGroundFrictionForce = false;
+    sysParam.enablePersonFrictionForce = false;
+    sysParam.enableRandNoisyForce = false;
+
+    //force parameters
+    sysParam.zetaActive = 1; // friction parameter for active propulsion
+    sysParam.zetaGround = 1; // friction parameter against the ground
+    sysParam.zetaPerson = 1; // friction parameter against other people
+    sysParam.kHarmonic = 1; // harmonic spring const between particles
+    sysParam.kHertzian = 1; // hertzian const between particles
+    sysParam.sigmaForceX = 0.2; // standard deviation for the force resulted from noise in the x axis
+    sysParam.sigmaForceY = 0.2; // standard deviation for the force resulted from noise in the y axis
+
+    //torque bools - Do we want to conside the following torques in oru sim, yay or nay?
+    sysParam.enablePolarAlignmentTorque = false;
+    sysParam.enableVelocityAlignmentTorque = false;
+    sysParam.enableAngularFrictionTorque = false;
+    sysParam.enablePairDissipationTorque = false;
+    sysParam.enableRandNoisyTorque = false;
+
+    //torque parameters
+    sysParam.xiAngular = 1; //angular friction coeff
+    sysParam.xiPair = 1; //pair dissipation coeff
+    sysParam.zetaPolar = 1; //polar alignment coeff
+    sysParam.zetaVelocity = 0.1; //velocity alignment coeff
+    sysParam.sigmaTorque = 0.2; //SD for the torque resulted from noise
+
+    //debug parameters
+    sysParam.debugType = physParam::None; //see physparam header for full list of debug states
 }
 
 System::System(physParam param)
