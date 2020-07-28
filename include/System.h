@@ -24,7 +24,6 @@ class System
         /// TODO: test how the cmdout class works in pybind
 
         // Functions which bind physParam setting ////////////////////////////////////////////////////
-        /// TODO: grouped functions for handling the physParam, ensure they only work when the simulation is not prepped
         void setParamStepSize(double stepSize); //sets step size for the sim
         void setParamVTPOutput(std::string outPath, std::string outFileName); //sets vtp output information for the sim
         void setParamParticleProperties(int N, double meanR, double sigmaR, double v_0, double sigmaV, double massRadiusRatio); //sets information on individual particles for the sim
@@ -40,7 +39,7 @@ class System
         void setParamActiveForce(double v_0, double zetaActive);
         void setParamGroundFrictionForce(double zetaGround);
         void setParamPersonFrictionForce(double zetaPerson);
-        void setParamRandNoisyForce(double sigmaForceX, douvble sigmaForceY);
+        void setParamRandNoisyForce(double sigmaForceX, double sigmaForceY);
 
         // Torque sets
         void setParamPolarAlignmentTorque(double zetaPolar);

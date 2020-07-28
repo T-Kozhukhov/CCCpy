@@ -20,7 +20,6 @@ System::System(){
     //step properties
     sysParam.stepSize = 0.01; // step size in seconds
     sysParam.stepMax = 100000; // how many steps the simulation should run for 
-    //TODO: Is the above necessary to bind?
 
     //output information
     sysParam.outputSteps = 1000; // after how many steps should you output? NOT BOUND
@@ -121,12 +120,143 @@ void System::setVerbose(){
     cmdout::setVerbose();
 }
 
+void System::setParamStepSize(double stepSize){
+    if(checkParamEditable()){
+        sysParam.stepSize = stepSize;
+    }
+}
+
+void System::setParamVTPOutput(std::string outPath, std::string outFileName){
+    if(checkParamEditable()){
+        sysParam.outDirPath = outPath;
+        sysParam.outFileName = outFileName;
+    }
+}
+
+void System::setParamParticleProperties(int N, double meanR, double sigmaR, double v_0, double sigmaV, double massRadiusRatio){
+    if(checkParamEditable()){
+        sysParam.N = N;
+        sysParam.meanR = meanR;
+        sysParam.sigmaR = sigmaR;
+        sysParam.v_0 = v_0;
+        sysParam.sigmaV = sigmaV;
+        sysParam.massRadiusRatio = massRadiusRatio;
+    }
+}
+
+void System::setParamBoundaryInformation(bool periodic, double L_x, double L_y, double overlapRatio){
+    if(checkParamEditable()){
+        sysParam.periodic = periodic;
+        sysParam.L_x = L_x;
+        sysParam.L_y = L_y;
+        sysParam.overlapRatio = overlapRatio;
+    }
+}
+
+void System::setParamSysStateCSVDir(std::string pathToSysStateDir){
+    if(checkParamEditable()){
+        sysParam.pathToLoadingCSV = pathToSysStateDir;
+    }    
+}
+
+void System::setParamDumpParticles(int dumpEveryNSteps, std::string pathToParticleData){
+    if(checkParamEditable()){
+        sysParam.particleDumpSteps = dumpEveryNSteps;
+        sysParam.pathToParticleData = pathToParticleData;
+    }
+}
+
 void System::setParamDumpSingleFile(std::string pathToParticleData){
     if(checkParamEditable()){
         sysParam.dumpSingleParticle=true;
         sysParam.pathToParticleData = pathToParticleData; //set the flag for dumping particle data and the corresponding path
 
         csv::setupSingleFile(sysParam.pathToParticleData);
+    }
+}
+
+void System::setParamHarmonicInterForce(double kHarmonic){
+    if(checkParamEditable()){
+        sysParam.enableHarmonicInterForce = true;
+        sysParam.kHarmonic = kHarmonic;
+    }    
+}
+
+void System::setParamHertzianInterForce(double kHertzian){
+    if(checkParamEditable()){
+        sysParam.enableHertzianInterForce = true;
+        sysParam.kHertzian = kHertzian;
+    }    
+}
+
+void System::setParamActiveForce(double v_0, double zetaActive){
+    if(checkParamEditable()){
+        sysParam.enableActiveForce = true;
+        sysParam.v_0 = v_0;
+        sysParam.zetaActive = zetaActive;
+    }    
+}
+
+void System::setParamGroundFrictionForce(double zetaGround){
+    if(checkParamEditable()){
+        sysParam.enableGroundFrictionForce = true;
+        sysParam.zetaGround = zetaGround;
+    }    
+}
+
+void System::setParamPersonFrictionForce(double zetaPerson){
+    if(checkParamEditable()){
+        sysParam.enablePersonFrictionForce = true;
+        sysParam.zetaPerson = zetaPerson;
+    }    
+}
+
+void System::setParamRandNoisyForce(double sigmaForceX, double sigmaForceY){
+    if(checkParamEditable()){
+        sysParam.enableRandNoisyForce = true;
+        sysParam.sigmaForceX = sigmaForceX;
+        sysParam.sigmaForceY = sigmaForceY;
+    }    
+}
+
+void System::setParamPolarAlignmentTorque(double zetaPolar){
+    if(checkParamEditable()){
+        sysParam.enablePolarAlignmentTorque = true;
+        sysParam.zetaPolar = zetaPolar;
+    }
+}
+
+void System::setParamVelocityAlignmentTorque(double zetaVelocity){
+    if(checkParamEditable()){
+        sysParam.enableVelocityAlignmentTorque = true;
+        sysParam.zetaVelocity = zetaVelocity;
+    }
+}
+
+void System::setParamAngularFrictionTorque(double xiAngular){
+    if(checkParamEditable()){
+        sysParam.enableAngularFrictionTorque = true;
+        sysParam.xiAngular = xiAngular;
+    }
+}
+
+void System::setParamPairDissipationTorque(double xiPair){
+    if(checkParamEditable()){
+        sysParam.enablePairDissipationTorque = true;
+        sysParam.xiPair = xiPair;
+    }
+}
+
+void System::setParamRandNoisyTorque(double sigmaTorque){
+    if(checkParamEditable()){
+        sysParam.enableRandNoisyTorque = true;
+        sysParam.sigmaTorque = sigmaTorque;
+    }
+}
+
+void System::setParamDebugMode(int mode){
+    if(checkParamEditable()){
+        sysParam.debugType = mode;
     }
 }
 
