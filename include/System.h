@@ -18,8 +18,8 @@ class System
         virtual ~System();
 
         // Functions that bind like CCC program arguments ////////////////////////////////////////////
-        /// TODO: function to set up experiment format directories?
-        /// TODO: function to set up loading particle data
+        /// TODO: function to set up experiment format directories? May be better to do in Python?
+        void setLoadICData(std::string pathToParticles); //set the system to load particle IC data
         void setVerbose(); //set whether the system is verbose or not
         /// TODO: test how the cmdout class works in pybind
 
@@ -53,10 +53,7 @@ class System
         // Main functions for operation //////////////////////////////////////////////////////////////
         void writeReadablePhysParam(); //writes out the current parameters in readable form
         void prepareSimulation(); // function which prepares the simulation to be run
-        /// TODO: make a runSimulation function which runs N timesteps and then dumps visualiser data, 
-                /// should keep track of which total timestep it's on so it can dump partData correctly. Only runs 
-                /// after sim is prepped and will ensure simBegun=true
-        void runSimulation(); // begins the simulation according to sysParam
+        void runSimulation(int T, bool dumpVTP, bool dumpPartData);
         int getCurrSimTimeStep(); // returns the current time step since the simulation began
 
         /// TODO: make a minimal version of pybind11 that can be included instead of my 115mb one!!!!
@@ -92,6 +89,7 @@ class System
         //assorted variables
         bool simulationBegun; //whether the simulation has begun or not, used for error catching
         bool simulationReady;
+        int currTimeStep;
 };
 
 #endif // SYSTEM_H

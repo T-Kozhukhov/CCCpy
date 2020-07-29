@@ -6,6 +6,7 @@ System::System(){
     //ctor for python class
     simulationBegun = false; //set simReady and simBegin to false to start with
     simulationReady = false;    
+    currTimeStep = 0;
 
     personList = std::vector<person>(0); //init the person list to avoid issues
 
@@ -84,29 +85,6 @@ System::System(){
     sysParam.debugType = physParam::None; //see physparam header for full list of debug states
 }
 
-System::System(physParam param)
-{
-    ///TODO: not needed in python binaries, remove later
-    //ctor
-    sysParam = param;
-    simulationBegun = false;
-    personList = std::vector<person>(0);
-
-    person::setMassRadiusRatio(sysParam.massRadiusRatio); //set the mass-radius ratio of particles now before any are generated
-
-    //handling boundary stuff here
-    bManager = boundaryManager(sysParam.periodic, sysParam.L_x, sysParam.L_y);
-
-    //preparing fManager and tManager by getting the necessary parameters from sysParam
-    fManager = force(&bManager, sysParam.zetaActive, sysParam.zetaGround, sysParam.zetaPerson,
-        sysParam.v_0, sysParam.kHarmonic, sysParam.kHertzian);
-    tManager = planarTorque(sysParam.xiAngular, sysParam.xiPair, sysParam.zetaPolar,
-        sysParam.zetaVelocity);
-
-    //setup of output manager
-    vtpDumper = output(sysParam.outFileName, sysParam.outDirPath, sysParam.outFileType, &personList);
-}
-
 System::~System()
 {
     //dtor
@@ -114,6 +92,11 @@ System::~System()
     for(unsigned int i = 0; i< personList.size(); i++){
         personList.at(i).killPointers(); //kill off person pointers
     }
+}
+
+void System::setLoadICData(std::string pathToParticles){
+    sysParam.loadParticles = true;
+    sysParam.pathToParticles = pathToParticles;
 }
 
 void System::setVerbose(){
@@ -312,47 +295,78 @@ void System::writeReadablePhysParam(){
 }
 
 void System::prepareSimulation(){
-    // prepares the simulation as the old CCC system class constructor used to do
-    person::setMassRadiusRatio(sysParam.massRadiusRatio); //set the mass-radius ratio of particles now before any are generated
+    if(simulationReady){ //throw warnings if the simulation is ready or the simulation has already begun
+        cmdout::cmdWrite(true, "Simulation attempted to be prepared again. Please prepare a simulation once at most."); 
+    } else if(simulationBegun){
+        cmdout::cmdWrite(true, "Simulation attempted to be prepared after running the simulation.");
+    } else{
+        // prepares the simulation as the old CCC system class constructor used to do
+        person::setMassRadiusRatio(sysParam.massRadiusRatio); //set the mass-radius ratio of particles now before any are generated
 
-    //handling boundary stuff here
-    bManager = boundaryManager(sysParam.periodic, sysParam.L_x, sysParam.L_y);
+        //handling boundary stuff here
+        bManager = boundaryManager(sysParam.periodic, sysParam.L_x, sysParam.L_y);
 
-    //preparing fManager and tManager by getting the necessary parameters from sysParam
-    fManager = force(&bManager, sysParam.zetaActive, sysParam.zetaGround, sysParam.zetaPerson,
-        sysParam.v_0, sysParam.kHarmonic, sysParam.kHertzian);
-    tManager = planarTorque(sysParam.xiAngular, sysParam.xiPair, sysParam.zetaPolar,
-        sysParam.zetaVelocity);
+        //preparing fManager and tManager by getting the necessary parameters from sysParam
+        fManager = force(&bManager, sysParam.zetaActive, sysParam.zetaGround, sysParam.zetaPerson,
+            sysParam.v_0, sysParam.kHarmonic, sysParam.kHertzian);
+        tManager = planarTorque(sysParam.xiAngular, sysParam.xiPair, sysParam.zetaPolar,
+            sysParam.zetaVelocity);
 
-    //setup of output manager
-    vtpDumper = output(sysParam.outFileName, sysParam.outDirPath, sysParam.outFileType, &personList);
+        //setup of output manager
+        vtpDumper = output(sysParam.outFileName, sysParam.outDirPath, sysParam.outFileType, &personList);
 
-    initParticles(); //init particles at this point
+        initParticles(); //init particles at this point
 
-    //perform exporting
-    csv::exportPList(personList, sysParam.pathToLoadingCSV+"initPartData.csv", sysParam.meanR); //exports the IC data for potential later usage
-    csv::exportPhysParam(sysParam, sysParam.pathToLoadingCSV); //export the sysParam we have at this point for later usage
+        //perform exporting
+        csv::exportPList(personList, sysParam.pathToLoadingCSV+"initPartData.csv", sysParam.meanR); //exports the IC data for potential later usage
+        csv::exportPhysParam(sysParam, sysParam.pathToLoadingCSV); //export the sysParam we have at this point for later usage
 
-    simulationReady = true; //at this point it's safe to run the simulation
+        simulationReady = true; //at this point it's safe to run the simulation
 
-    cmdout::cmdWrite(false, "Simulation has been prepared. PhysParams are no longer editable.");
+        cmdout::cmdWrite(false, "Simulation has been prepared. PhysParams are no longer editable.");
+    } 
 }
 
-void System::runSimulation(){
-    /// TODO: function is not needed in python binaries, remove later
-    cmdout::cmdWrite(false, "Preparing simulation");
+void System::runSimulation(int T, bool dumpVTP, bool dumpPartData){
+    if(!simulationReady){ // throw warning is simulation has already been prepared
+        cmdout::cmdWrite(true, "Simulation has not been prepared. Please call System::prepareSimulation first.");
+    } else {
+        simulationBegun = true; //make sure the flag is set to indicate the simulation has begun running
 
-    initParticles(); //initialise particles
-    csv::exportPList(personList, sysParam.pathToLoadingCSV+"initPartData.csv", sysParam.meanR); //exports the IC data for potential later usage
+        //do T time steps
+        for(int i = 0; i < T; i++){
+            currTimeStep++;
+            step(currTimeStep);
+        }
 
-    cmdout::cmdWrite(false, "Executing simulation");
-    simulationBegun = true; //set the simulation as begun to catch errors
+        cmdout::cmdWrite(false, "Ran "+T+" time steps. Current cummulative time step is "+currTimeStep); //output to CMD if verbose
 
-    for(int t = 0; t<sysParam.stepMax; t++){ // perform appropriate number of steps
-        step(t);
+        //now dump VTP data if recquired
+        if(dumpVTP){
+            vtpDumper.dump(currTimeStep);
+
+            cmdout::cmdWrite(false, "Dumped VTP data on timestep "+currTimeStep);
+        }
+        if(dumpPartData){
+            if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
+                if(sysParam.dumpSingleParticle){
+                    csv::dumpSingleParticleData(personList, currTimeStep*sysParam.stepSize, 0); //dump a single particle if specified
+                } else { //otherwise dump all particles
+                    //make file path
+                    std::stringstream ss;
+                    ss << sysParam.pathToParticleData << "ParticleData" << t <<".csv";
+
+                    csv::dumpParticleData(personList, ss.str(), currTimeStep*sysParam.stepSize); //dump all particles to file path
+                }
+            }
+
+            cmdout::cmdWrite(false, "Dumped particle data on timestep "+currTimeStep);
+        }
     }
+}
 
-    cmdout::cmdWrite(true, "Simulation completed. Output at: " + vtpDumper.getPathInfo());
+int System::getCurrSimTimeStep(){
+    return currTimeStep;
 }
 
 void System::initParticles(){
@@ -380,28 +394,6 @@ void System::initParticles(){
 }
 
 void System::step(int t){
-    //We do all dumping before we do maths.
-    //check to see if we should output on this step or not
-    if (t%sysParam.outputSteps == 0){ ///TODO: remove 
-        vtpDumper.dump(t);
-    }
-
-    //check to see if we should dump particle data
-    if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
-        if(t%sysParam.particleDumpSteps == 0){ //and it's the correct step to dump particle data
-            if(sysParam.dumpSingleParticle){
-                csv::dumpSingleParticleData(personList, t*sysParam.stepSize, 0); //dump a single particle if specified
-            } else { //otherwise dump all particles
-                //make file path
-                std::stringstream ss;
-                ss << sysParam.pathToParticleData << "ParticleData" << t <<".csv";
-
-                csv::dumpParticleData(personList, ss.str(), t*sysParam.stepSize); //dump all particles to file path
-            }
-        }
-    }
-
-    //Now do mathematics related stuff
     //first, check to see if neighbour lists need to be updated
     if(neighbourList::checkUpdate(&personList, &bManager)){
         neighbourList::updateLists(&personList, &bManager); //update the neighbour lists if necessary
