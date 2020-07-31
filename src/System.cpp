@@ -149,7 +149,7 @@ void System::setParamDumpParticles(int dumpEveryNSteps, std::string pathToPartic
     }
 }
 
-void System::setParamDumpSingleFile(std::string pathToParticleData){
+void System::setParamDumpParticlesSingleFile(std::string pathToParticleData){
     if(checkParamEditable()){
         sysParam.dumpSingleParticle=true;
         sysParam.pathToParticleData = pathToParticleData; //set the flag for dumping particle data and the corresponding path
@@ -245,7 +245,7 @@ void System::setParamDebugMode(int mode){
 
 void System::writeReadablePhysParam(){
     //spaghetti code dump, writes a readable version of the physparam
-    cmdout::cmdWrite(true, "Dumping readable form of currently written parameters. [B] indicates a boolean variable.")
+    cmdout::cmdWrite(true, "Dumping readable form of currently written parameters. [B] indicates a boolean variable.");
     cmdout::cmdWrite(true, "Step size: "+std::to_string(sysParam.stepSize));
     cmdout::cmdWrite(true, "Maximum number of steps: "+std::to_string(sysParam.stepMax));
     cmdout::cmdWrite(true, "Dump .vtp files every n steps. n: "+std::to_string(sysParam.outputSteps));
@@ -291,7 +291,7 @@ void System::writeReadablePhysParam(){
     cmdout::cmdWrite(true, "Standard deviation for random noisy torques: "+std::to_string(sysParam.sigmaTorque));
     cmdout::cmdWrite(true, "Debug override. IF NOT 0, uses hardcoded overrides for initial conditions. See docs for more details: "+std::to_string(sysParam.debugType));
     cmdout::cmdWrite(true, "[B] If dumping particle data, do we dump only a single particle to a single file: "+std::to_string(sysParam.dumpSingleParticle));
-    cmdout::cmdWrite(true, "Ratio of mass to radius^2, used for calculating mass of particles: "+std::to_string(sysParam.massRadiusRatio);
+    cmdout::cmdWrite(true, "Ratio of mass to radius^2, used for calculating mass of particles: "+std::to_string(sysParam.massRadiusRatio));
 }
 
 void System::prepareSimulation(){
@@ -339,7 +339,7 @@ void System::runSimulation(int T, bool dumpVTP, bool dumpPartData){
             step(currTimeStep);
         }
 
-        cmdout::cmdWrite(false, "Ran "+T+" time steps. Current cummulative time step is "+currTimeStep); //output to CMD if verbose
+        cmdout::cmdWrite(false, "Ran "+std::to_string(T)+" time steps. Current cummulative time step is "+std::to_string(currTimeStep)); //output to CMD if verbose
 
         //now dump VTP data if recquired
         if(dumpVTP){
@@ -354,7 +354,7 @@ void System::runSimulation(int T, bool dumpVTP, bool dumpPartData){
                 } else { //otherwise dump all particles
                     //make file path
                     std::stringstream ss;
-                    ss << sysParam.pathToParticleData << "ParticleData" << t <<".csv";
+                    ss << sysParam.pathToParticleData << "ParticleData" << currTimeStep <<".csv";
 
                     csv::dumpParticleData(personList, ss.str(), currTimeStep*sysParam.stepSize); //dump all particles to file path
                 }

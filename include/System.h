@@ -14,13 +14,12 @@ class System
 {
     public: //functions in here are those that will be bound in the end
         System();
-        System(physParam param);
         virtual ~System();
 
         // Functions that bind like CCC program arguments ////////////////////////////////////////////
         /// TODO: function to set up experiment format directories? May be better to do in Python?
         void setLoadICData(std::string pathToParticles); //set the system to load particle IC data
-        void setVerbose(); //set whether the system is verbose or not
+        void setVerbose(); //Force the system to produce verbose output
         /// TODO: test how the cmdout class works in pybind
 
         // Functions which bind physParam setting ////////////////////////////////////////////////////
@@ -89,7 +88,7 @@ class System
         //assorted variables
         bool simulationBegun; //whether the simulation has begun or not, used for error catching
         bool simulationReady;
-        int currTimeStep;
+        int currTimeStep; // the current cummulative time step of the system
 };
 
 #endif // SYSTEM_H

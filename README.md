@@ -8,6 +8,7 @@ To compile and use the program, the following must be installed:
 - CMake. Set to require version 3.1 or above but easily changed by an experienced user.
 - GNU Scientific Library (I used v2.4)
 - Visualisation ToolKit (VTK) **v6 or above is required** (I used v6.3)
+- Python 3.6 or above
 
 GSL and VTK can be installed on Ubuntu using the following top-level packages:
 ```
@@ -19,6 +20,8 @@ Output .vtp visualisation files can be read using the ParaView software.
 Pybind11 is included as part of the repo. 
 
 ## Compiling the Python Binary 
+The python binary is designed to be compiled via CMake. It is strongly recommended to build in a build directory, such as the following:
+
 TODO: Write guide entry on how to compile the Python Binary
 
 ## Usage and Tutorial
