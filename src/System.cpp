@@ -11,9 +11,9 @@ System::System(){
     personList = std::vector<person>(0); //init the person list to avoid issues
 
     // title card
-    cmdout::cmdWrite(true, "============================================");
-    cmdout::cmdWrite(true, "|  Custom Crowds in C++ in Python (CCCpy)  |");
-    cmdout::cmdWrite(true, "============================================");
+    cmdout::cmdWrite(true, "=============================================");
+    cmdout::cmdWrite(true, "|  Custom Crowds in C++ for Python (CCCpy)  |");
+    cmdout::cmdWrite(true, "=============================================");
     cmdout::cmdWrite(true, " "); //newline for spacing
 
     //set up default physParam parameters here - Found through S Spedding's project, 2019
