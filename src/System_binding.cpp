@@ -9,6 +9,7 @@ PYBIND11_MODULE(CCCpy, m) {
     m.doc() = "Custom Crowds in C++ for Python. A fork of the CCC software designed to be controlled from Python at the system level using Pybind11.";
     
     //TODO: add docs for each variable for each member
+    //TODO: fix console output
 
     py::class_<System>(m, "System") //defining the class
         .def(py::init<>())

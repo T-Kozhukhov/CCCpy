@@ -18,6 +18,7 @@ class System
 
         // Functions that bind like CCC program arguments ////////////////////////////////////////////
         /// TODO: function to set up experiment format directories? May be better to do in Python?
+        /// TODO: Make python function to set number of particles from density and box size, and square box size from density and # particles
         void setLoadICData(std::string pathToParticles); //set the system to load particle IC data
         void setVerbose(); //Force the system to produce verbose output
         /// TODO: test how the cmdout class works in pybind

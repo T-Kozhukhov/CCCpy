@@ -16,8 +16,7 @@ System::System(){
     cmdout::cmdWrite(true, "============================================");
     cmdout::cmdWrite(true, " "); //newline for spacing
 
-    //set up default physParam parameters here
-    ///TODO: set default physParam parameters here
+    //set up default physParam parameters here - Found through S Spedding's project, 2019
     //step properties
     sysParam.stepSize = 0.01; // step size in seconds
     sysParam.stepMax = 100000; // how many steps the simulation should run for 
@@ -29,17 +28,17 @@ System::System(){
     sysParam.outFileType = "vtp"; //file tpye to save as (should be vtp, no dots) NOT BOUND
 
     //particle properties
-    sysParam.N = 300; //if randomly generating particles, this is how many to generate
-    sysParam.meanR = 1; // mean radius
-    sysParam.v_0 = 0.05; // active velocity parameter
-    sysParam.sigmaR = 0.1; // standard deviation of the radius
+    sysParam.N = 1000; //if randomly generating particles, this is how many to generate
+    sysParam.meanR = 0.5; // mean radius
+    sysParam.v_0 = 2; // active velocity parameter
+    sysParam.sigmaR = 0.15; // standard deviation of the radius
     sysParam.sigmaV = 0; // standard deviation for when generating gaussian velocities
-    sysParam.massRadiusRatio = 1; //ratio of particle mass to radius used for finding mass of particles
+    sysParam.massRadiusRatio = 280; //ratio of particle mass to radius used for finding mass of particles
 
     //boundary consts
     sysParam.periodic = true; // is the boundary periodic or no?
-    sysParam.L_x = 40;
-    sysParam.L_y = 40;
+    sysParam.L_x = 30;
+    sysParam.L_y = 30;
     sysParam.overlapRatio = 0; //overlap ratio if the boundary is not periodic
 
     //csv information
@@ -59,13 +58,13 @@ System::System(){
     sysParam.enableRandNoisyForce = false;
 
     //force parameters
-    sysParam.zetaActive = 1; // friction parameter for active propulsion
-    sysParam.zetaGround = 1; // friction parameter against the ground
+    sysParam.zetaActive = 50; // friction parameter for active propulsion
+    sysParam.zetaGround = 50; // friction parameter against the ground
     sysParam.zetaPerson = 1; // friction parameter against other people
-    sysParam.kHarmonic = 1; // harmonic spring const between particles
+    sysParam.kHarmonic = 500; // found from considering squishing a person by 20cm costs about 100N
     sysParam.kHertzian = 1; // hertzian const between particles
-    sysParam.sigmaForceX = 0.2; // standard deviation for the force resulted from noise in the x axis
-    sysParam.sigmaForceY = 0.2; // standard deviation for the force resulted from noise in the y axis
+    sysParam.sigmaForceX = 0; // standard deviation for the force resulted from noise in the x axis
+    sysParam.sigmaForceY = 0; // standard deviation for the force resulted from noise in the y axis
 
     //torque bools - Do we want to conside the following torques in oru sim, yay or nay?
     sysParam.enablePolarAlignmentTorque = false;
@@ -75,11 +74,11 @@ System::System(){
     sysParam.enableRandNoisyTorque = false;
 
     //torque parameters
-    sysParam.xiAngular = 1; //angular friction coeff
-    sysParam.xiPair = 1; //pair dissipation coeff
-    sysParam.zetaPolar = 1; //polar alignment coeff
-    sysParam.zetaVelocity = 0.1; //velocity alignment coeff
-    sysParam.sigmaTorque = 0.2; //SD for the torque resulted from noise
+    sysParam.xiAngular = 6; //angular friction coeff
+    sysParam.xiPair = 6; //pair dissipation coeff
+    sysParam.zetaPolar = 0; //polar alignment coeff
+    sysParam.zetaVelocity = 0; //velocity alignment coeff
+    sysParam.sigmaTorque = 0; //SD for the torque resulted from noise
 
     //debug parameters
     sysParam.debugType = physParam::None; //see physparam header for full list of debug states

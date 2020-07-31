@@ -23,5 +23,5 @@ pybind11_add_module(CCCpy ${SOURCES}) #makes a python module by using all specif
 target_link_libraries(CCCpy PRIVATE GSL::gsl GSL::gslcblas) #link GSL libs
 target_link_libraries(CCCpy PRIVATE ${VTK_LIBRARIES}) #link VTK libs
 
-#TODO: fix issue with no init - seems to be fairly common, google it
 #TODO: init fix issue is due to VTK forcing python 2, see if you can set a flag to force it to use python 3
+#TODO: fix issue of no cmd output from bound code
