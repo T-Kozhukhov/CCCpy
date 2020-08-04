@@ -1,5 +1,3 @@
-// TODO: test functionality of this class
-
 #include <pybind11/pybind11.h>
 
 #include "cmdout.h"

@@ -1,6 +1,5 @@
-/*  TODO: Test functionality of dumping functions for new headers after implementing pybind
+/*  TODO: Test functionality of importing functions for new headers after implementing pybind
 */
-
 #include "csv.h"
 #include "cmdout.h"
 
@@ -28,7 +27,7 @@ void csv::setupSingleFile(std::string filePath){ //set single particle dump to b
     csv::enableSinglePartFile = true;
 
     //add headers to singlefile
-    csv::singleFile << "xPos,yPos,xVel,yVel,polAngle,polVel" << "\n"; 
+    csv::singleFile << "currTime,xPos,yPos,xVel,yVel,polAngle,polVel" << "\n"; 
 }
 
 std::vector<person> csv::importPList(std::string path){
@@ -191,7 +190,7 @@ void csv::dumpParticleData(std::vector<person> pList, std::string pathOut, doubl
     }
 
     //finally, make a CSV
-    makeCSV(lines, pathOut, "xPos,yPos,xVel,yVel,polAngle,polVel");
+    makeCSV(lines, pathOut, "currTime,xPos,yPos,xVel,yVel,polAngle,polVel");
 }
 
 void csv::dumpSingleParticleData(std::vector<person> pList, double currTime, int id){ //do a single particle data dump
@@ -236,7 +235,6 @@ std::vector<std::string> csv::getLines(std::string path){
 
     // first line will contain the headers, so we need to remove them
     toReturn.erase(toReturn.begin()); //remove first element, which should contain the headers
-    // TODO: this sounds dodgy! Test this properly by inspection!
 
     return toReturn; //return as necessary
 }
