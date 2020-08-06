@@ -1,5 +1,6 @@
-/*  TODO: Test functionality of importing functions for new headers after implementing pybind
+/*  TODO: Test functionality of dumping functions for new headers after implementing pybind
 */
+
 #include "csv.h"
 #include "cmdout.h"
 
@@ -27,7 +28,7 @@ void csv::setupSingleFile(std::string filePath){ //set single particle dump to b
     csv::enableSinglePartFile = true;
 
     //add headers to singlefile
-    csv::singleFile << "currTime,xPos,yPos,xVel,yVel,polAngle,polVel" << "\n"; 
+    csv::singleFile << "xPos,yPos,xVel,yVel,polAngle,polVel" << "\n"; 
 }
 
 std::vector<person> csv::importPList(std::string path){
@@ -70,6 +71,7 @@ physParam csv::importPhysParam(std::string path){
     //first, get lines from the specified file
     std::vector<std::string> lines = getLines(path);
     //now, extract version
+	cmdout::cmdWrite(true, lines.at(0));
     std::vector<std::string> firstLineWords = splitLine(lines.at(0));
     int version = std::stoi(firstLineWords.at(1)); //version is stored in the second cell on the first row
 
@@ -81,6 +83,7 @@ physParam csv::importPhysParam(std::string path){
 
     //do some output
     cmdout::cmdWrite(true, "Beginning loading of parameters from " + path);
+	cmdout::cmdWrite(true, "version: "+std::to_string(version));
     //check version and call the appropriate function as necessary
     if(version==1){ //each block will process the file and return the appropriate physParam
         toReturn = extractPhysParamV1(lines);
@@ -88,7 +91,7 @@ physParam csv::importPhysParam(std::string path){
         toReturn = extractPhysParamV2(lines);
     } else {
         cmdout::cmdWrite(true, "Error: Cannot get version from physParam .csv at "+path);
-        cmdout::cmdWrite(true, "Program believes we are on PhysParam version " + version);
+        cmdout::cmdWrite(true, "Program believes we are on PhysParam version " + std::to_string(version));
         cmdout::cmdWrite(true, "Returning a blank physParam object. Expect the program to fail.");
         return physParam(); //return a blank physParam
     }
@@ -158,8 +161,7 @@ void csv::exportPhysParam(physParam param, std::string path){
     lines.push_back(csvLine); //make it the second line
 
     //finally, make a csv based on the generated lines:
-    makeCSV(lines, path+"PhysParamData.csv",""); //NOTE: PHYSPARAMS DO NOT HAVE HEADERS!!! 
-                                                    // they have a blank space on line 1, preceding the version
+    makeCSV(lines, path+"PhysParamData.csv","PhysParam Data"); //NOTE: PHYSPARAMS DO NOT HAVE HEADERS!!! 
 
     //now, save the data into a readable format
     makeReadablePhysParam(param, path+"ParameterList_Readable.txt");
@@ -190,7 +192,7 @@ void csv::dumpParticleData(std::vector<person> pList, std::string pathOut, doubl
     }
 
     //finally, make a CSV
-    makeCSV(lines, pathOut, "currTime,xPos,yPos,xVel,yVel,polAngle,polVel");
+    makeCSV(lines, pathOut, "xPos,yPos,xVel,yVel,polAngle,polVel");
 }
 
 void csv::dumpSingleParticleData(std::vector<person> pList, double currTime, int id){ //do a single particle data dump
@@ -234,7 +236,8 @@ std::vector<std::string> csv::getLines(std::string path){
     fin.close(); //close the file
 
     // first line will contain the headers, so we need to remove them
-    toReturn.erase(toReturn.begin()); //remove first element, which should contain the headers
+	toReturn.erase(toReturn.begin()); //remove first element, which should contain the headers
+    // TODO: this sounds dodgy! Test this properly by inspection!
 
     return toReturn; //return as necessary
 }
