@@ -1,4 +1,0 @@
-/mnt/d/Coding/Libraries/pybind11-master/build/tests/test_cmake_build/installed_embed/CMakeFiles/rebuild_cache.dir
-/mnt/d/Coding/Libraries/pybind11-master/build/tests/test_cmake_build/installed_embed/CMakeFiles/edit_cache.dir
-/mnt/d/Coding/Libraries/pybind11-master/build/tests/test_cmake_build/installed_embed/CMakeFiles/test_cmake_build.dir
-/mnt/d/Coding/Libraries/pybind11-master/build/tests/test_cmake_build/installed_embed/CMakeFiles/check.dir

@@ -9,7 +9,7 @@ s = CCCpy.System() # make an instance of the System class
 
 # now we set up the system's parameters to run an active jamming simulation to demonstrate usage
 s.setParamStepSize(0.01)
-s=setExperimentDirectory(s, "./Demonstration/", 1)
+s=setExperimentDirectory(s, "./Demonstration/", 1) #note this utility function recquires that it be called differently
 s.setParamParticleProperties(500, 1, 0.03, 0.05, 0, 1)
 s.setParamBoundaryInformation(False, 40, 40, 0.25)
 
@@ -29,6 +29,7 @@ s.prepareSimulation() # prepare the simulation for use
 
 #now the simulation loop
 for i in range(1,1000):
-    s.runSimulation(250, True, True)
+    s.runSimulation(250, 1, 0)
     print "current step: "+str(s.getCurrSimTimeStep())
 
+#TODO: debug code segfaulting
