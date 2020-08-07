@@ -29,7 +29,5 @@ s.prepareSimulation() # prepare the simulation for use
 
 #now the simulation loop
 for i in range(1,1000):
-    s.runSimulation(250, 1, 0)
+    s.runSimulation(250, 1, 1)
     print "current step: "+str(s.getCurrSimTimeStep())
-
-#TODO: debug code segfaulting

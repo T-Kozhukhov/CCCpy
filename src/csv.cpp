@@ -28,7 +28,7 @@ void csv::setupSingleFile(std::string filePath){ //set single particle dump to b
     csv::enableSinglePartFile = true;
 
     //add headers to singlefile
-    csv::singleFile << "xPos,yPos,xVel,yVel,polAngle,polVel" << "\n"; 
+    csv::singleFile << "currTime,xPos,yPos,xVel,yVel,polAngle,polVel" << "\n"; 
 }
 
 std::vector<person> csv::importPList(std::string path){
@@ -192,7 +192,7 @@ void csv::dumpParticleData(std::vector<person> pList, std::string pathOut, doubl
     }
 
     //finally, make a CSV
-    makeCSV(lines, pathOut, "xPos,yPos,xVel,yVel,polAngle,polVel");
+    makeCSV(lines, pathOut, "currTime,xPos,yPos,xVel,yVel,polAngle,polVel");
 }
 
 void csv::dumpSingleParticleData(std::vector<person> pList, double currTime, int id){ //do a single particle data dump

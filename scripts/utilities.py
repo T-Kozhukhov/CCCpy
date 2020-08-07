@@ -6,6 +6,8 @@ import os
 
 # TODO: Consider making a utility to help generate IC data for particles - Similar to the helper functions in the bManager class.
 
+# TODO: Consider making a utility class to hold information for particles
+
 def smartMkDir(dir):
     # A smart os.mkdir which only makes a directory if it doesn't exist
     if not os.path.exists(dir):
