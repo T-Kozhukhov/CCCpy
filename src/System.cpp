@@ -347,7 +347,7 @@ void System::runSimulation(int T, bool dumpVTP, bool dumpPartData){
         if(dumpVTP){
             vtpDumper.dump(currTimeStep);
 
-            cmdout::cmdWrite(false, "Dumped VTP data on timestep "+currTimeStep);
+            cmdout::cmdWrite(false, "Dumped VTP data on timestep "+std::to_string(currTimeStep));
         }
         if(dumpPartData){
             if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
@@ -362,7 +362,7 @@ void System::runSimulation(int T, bool dumpVTP, bool dumpPartData){
                 }
             }
 
-            cmdout::cmdWrite(false, "Dumped particle data on timestep "+currTimeStep);
+            cmdout::cmdWrite(false, "Dumped particle data on timestep "+std::to_string(currTimeStep));
         }
     }
 }

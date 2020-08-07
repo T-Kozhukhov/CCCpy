@@ -45,7 +45,7 @@ void output::dump(int tStep){
     writer->SetDataModeToAscii();
     writer->Write();
 
-     cmdout::cmdWrite(false, "Stored data to: " + fullFilePath );
+    cmdout::cmdWrite(false, "Stored data to: " + fullFilePath );
 }
 
 std::string output::getPathInfo(){
