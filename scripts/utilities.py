@@ -13,7 +13,7 @@ def smartMkDir(dir):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
-def setExperimentDirectory(s, pathToDir, dumpingType):
+def setExperimentDirectory(s, pathToDir, dumpingType, singleDumpID):
     # Returns a System with experiment directories created and set accordingly
     # particle dumping depends on the last argument: 0-No part dump, 1-multi file part dump, 2-single file part dump
 
@@ -29,7 +29,7 @@ def setExperimentDirectory(s, pathToDir, dumpingType):
     s.setParamVTPOutput(VTPDataDir, "VisualiserData")
     s.setParamSysStateCSVDir(pathToDir)
     if dumpingType == 2: #dump particle data depending on relevent argument
-        s.setParamDumpParticlesSingleFile(partDataDir)
+        s.setParamDumpParticlesSingleFile(partDataDir, singleDumpID)
     else:
         s.setParamDumpParticles(dumpingType, partDataDir)
     return s #at the end return the system
