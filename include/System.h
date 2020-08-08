@@ -53,8 +53,6 @@ class System
         void runSimulation(int T, bool dumpVTP, bool dumpPartData);
         int getCurrSimTimeStep(); // returns the current time step since the simulation began
 
-        /// TODO: make a minimal version of pybind11 that can be included instead of my 115mb one!!!!
-
     private:
         //system parameters
         physParam sysParam; // all global parameters particular system

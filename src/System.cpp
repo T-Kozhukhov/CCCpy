@@ -87,8 +87,6 @@ System::System(){
 System::~System()
 {
     //dtor
-    // TODO: hunt down segfault - it occurs before this is called
-
     //kill off all pointers that need to exist for the entire system duration
     for(unsigned int i = 0; i< personList.size(); i++){
         personList.at(i).killPointers(); //kill off person pointers

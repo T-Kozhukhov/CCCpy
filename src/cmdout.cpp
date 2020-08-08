@@ -2,9 +2,6 @@
 
 #include "cmdout.h"
 
-
-// TODO: fix the stream issue when using verbose mode?
-
 namespace py = pybind11;
 
 bool cmdout::verbose; //defining static members here

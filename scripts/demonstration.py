@@ -31,3 +31,5 @@ s.prepareSimulation() # prepare the simulation for use
 for i in range(1,1000):
     s.runSimulation(250, 1, 1)
     print "current step: "+str(s.getCurrSimTimeStep())
+
+#TODO: edit the bindings to allow you to specify which single particle to dump?

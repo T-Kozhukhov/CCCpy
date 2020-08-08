@@ -8,7 +8,7 @@ To compile and use the program, the following must be installed:
 - CMake. Set to require version 3.1 or above but easily changed by an experienced user.
 - GNU Scientific Library (I used v2.4)
 - Visualisation ToolKit (VTK) **v6 or above is required** (I used v6.3)
-- Python 2 (This is due to a bug where VTK seems to force Python 2) 
+- Python 2 **exclusively** (This is due to a bug where VTK seems to force Python 2) 
 
 GSL and VTK can be installed on Ubuntu using the following top-level packages:
 ```
@@ -40,4 +40,4 @@ TODO: Mention that basic reminders for parameters can be found in the Python doc
 
 TODO: Write guide on general usage, and a rough top level tutorial on how to get a basic simulation going. 
 
-TODO: Perhaps provide full documentation on what bindings are available in a seperate file/ wiki? Make sure build in Python docs work!!!
+TODO: Perhaps provide full documentation on what bindings are available in a seperate file/ wiki? Make sure built in Python docs work!!!
