@@ -28,7 +28,7 @@ class System
        
         void setParamSysStateCSVDir(std::string pathToSysStateDir); //sets the path to place the phyparam and init particle state csvs
         void setParamDumpParticles(int dumpEveryNSteps, std::string pathToParticleData); // file path to the dir where particle data should be stored
-        void setParamDumpParticlesSingleFile(std::string pathToParticleData); //dumps data on particle #0 to the specified path
+        void setParamDumpParticlesSingleFile(std::string pathToParticleData, int partNo); //dumps data on particle #0 to the specified path
         
         // Force sets
         void setParamHarmonicInterForce(double kHarmonic);
@@ -85,6 +85,7 @@ class System
         bool simulationBegun; //whether the simulation has begun or not, used for error catching
         bool simulationReady;
         int currTimeStep; // the current cummulative time step of the system
+        int singleParticleDumpID;
 };
 
 #endif // SYSTEM_H

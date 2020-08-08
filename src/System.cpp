@@ -149,10 +149,11 @@ void System::setParamDumpParticles(int dumpEveryNSteps, std::string pathToPartic
     }
 }
 
-void System::setParamDumpParticlesSingleFile(std::string pathToParticleData){
+void System::setParamDumpParticlesSingleFile(std::string pathToParticleData, int partNo){
     if(checkParamEditable()){
         sysParam.dumpSingleParticle=true;
         sysParam.pathToParticleData = pathToParticleData; //set the flag for dumping particle data and the corresponding path
+        singleParticleDumpID = partNo; //set to dump the specified particle ID
 
         csv::setupSingleFile(sysParam.pathToParticleData);
     }
@@ -350,7 +351,7 @@ void System::runSimulation(int T, bool dumpVTP, bool dumpPartData){
         if(dumpPartData){
             if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
                 if(sysParam.dumpSingleParticle){
-                    csv::dumpSingleParticleData(personList, currTimeStep*sysParam.stepSize, 0); //dump a single particle if specified
+                    csv::dumpSingleParticleData(personList, currTimeStep*sysParam.stepSize, singleParticleDumpID); //dump a single particle if specified
                 } else { //otherwise dump all particles
                     //make file path
                     std::stringstream ss;
