@@ -36,8 +36,8 @@ Move the compiled binary to the same directory as where you intend to run your P
 
 To test usage, you can try running the script at /scripts/demonstration.py which demonstrates basic usage of CCCpy - Copy the Python binary to /scripts/ and then from that directory call ``python demonstration.py``. This script creates a subdirectory called 'Demonstration' with CCC files in "experiment format" and runs a simulation demonstrating Active Jamming behaviour (S Henkes, 2011). The .vtp files contained within the 'Demonstration/VTP/' can be opened and displayed in ParaView. 
 
-TODO: Mention that basic reminders for parameters can be found in the Python docs for each function
+For full documentation, see the (unfinished!) wiki [here](https://github.com/T-Kozhukhov/CCCpy/wiki)!
 
-TODO: Write guide on general usage, and a rough top level tutorial on how to get a basic simulation going. 
+TODO: Mention that basic reminders for parameters can be found in the Python docs for each function both here and in wiki. 
 
-TODO: Perhaps provide full documentation on what bindings are available in a seperate file/ wiki? Make sure built in Python docs work!!!
+TODO: Finish docs wiki on Github.
