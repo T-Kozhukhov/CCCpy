@@ -2,26 +2,86 @@
 #include "csv.h"
 #include "cmdout.h"
 
-System::System(physParam param)
-{
-    //ctor
-    sysParam = param;
-    simulationBegun = false;
-    personList = std::vector<person>(0);
+System::System(){
+    //ctor for python class
+    simulationBegun = false; //set simReady and simBegin to false to start with
+    simulationReady = false;    
+    currTimeStep = 0;
 
-    person::setMassRadiusRatio(sysParam.massRadiusRatio); //set the mass-radius ratio of particles now before any are generated
+    personList = std::vector<person>(0); //init the person list to avoid issues
 
-    //handling boundary stuff here
-    bManager = boundaryManager(sysParam.periodic, sysParam.L_x, sysParam.L_y);
+    // title card
+    cmdout::cmdWrite(true, "=============================================");
+    cmdout::cmdWrite(true, "|  Custom Crowds in C++ for Python (CCCpy)  |");
+    cmdout::cmdWrite(true, "=============================================");
+    cmdout::cmdWrite(true, " "); //newline for spacing
 
-    //preparing fManager and tManager by getting the necessary parameters from sysParam
-    fManager = force(&bManager, sysParam.zetaActive, sysParam.zetaGround, sysParam.zetaPerson,
-        sysParam.v_0, sysParam.kHarmonic, sysParam.kHertzian);
-    tManager = planarTorque(sysParam.xiAngular, sysParam.xiPair, sysParam.zetaPolar,
-        sysParam.zetaVelocity);
+    //set up default physParam parameters here - Found through S Spedding's project, 2019
+    //step properties
+    sysParam.stepSize = 0.01; // step size in seconds
+    sysParam.stepMax = 100000; // how many steps the simulation should run for 
 
-    //setup of output manager
-    vtpDumper = output(sysParam.outFileName, sysParam.outDirPath, sysParam.outFileType, &personList);
+    //output information
+    sysParam.outputSteps = 1000; // after how many steps should you output? NOT BOUND
+    sysParam.outDirPath = "./VTP/"; //path to output directory
+    sysParam.outFileName = "VisualiserData"; //what file to store data into. .vtp extension should NOT be included
+    sysParam.outFileType = "vtp"; //file tpye to save as (should be vtp, no dots) NOT BOUND
+
+    //particle properties
+    sysParam.N = 1000; //if randomly generating particles, this is how many to generate
+    sysParam.meanR = 0.5; // mean radius
+    sysParam.v_0 = 2; // active velocity parameter
+    sysParam.sigmaR = 0.15; // standard deviation of the radius
+    sysParam.sigmaV = 0; // standard deviation for when generating gaussian velocities
+    sysParam.massRadiusRatio = 280; //ratio of particle mass to radius used for finding mass of particles
+
+    //boundary consts
+    sysParam.periodic = true; // is the boundary periodic or no?
+    sysParam.L_x = 30;
+    sysParam.L_y = 30;
+    sysParam.overlapRatio = 0; //overlap ratio if the boundary is not periodic
+
+    //csv information
+    sysParam.loadParticles = false; // whether to load particles or not
+    sysParam.pathToParticles = ""; //full file path to csv containing particle information
+    sysParam.pathToLoadingCSV = "./"; //file path to where the physParam, init particle state, and single file is dumped
+    sysParam.particleDumpSteps = 0; //after how many steps to dump particle data. 0 for no dumping
+    sysParam.pathToParticleData = "./ParticleData/"; //file path to the directory where particle data should be stored
+    sysParam.dumpSingleParticle = false; //whether to dump a single particle or not
+
+    //force bools - Do we want to consider the following forces in our sim, yay or nay?
+    sysParam.enableHarmonicInterForce = false;
+    sysParam.enableHertzianInterForce = false;
+    sysParam.enableActiveForce = false;
+    sysParam.enableGroundFrictionForce = false;
+    sysParam.enablePersonFrictionForce = false;
+    sysParam.enableRandNoisyForce = false;
+
+    //force parameters
+    sysParam.zetaActive = 50; // friction parameter for active propulsion
+    sysParam.zetaGround = 50; // friction parameter against the ground
+    sysParam.zetaPerson = 1; // friction parameter against other people
+    sysParam.kHarmonic = 500; // found from considering squishing a person by 20cm costs about 100N
+    sysParam.kHertzian = 1; // hertzian const between particles
+    sysParam.sigmaForceX = 0; // standard deviation for the force resulted from noise in the x axis
+    sysParam.sigmaForceY = 0; // standard deviation for the force resulted from noise in the y axis
+
+    //torque bools - Do we want to conside the following torques in oru sim, yay or nay?
+    sysParam.enablePolarAlignmentTorque = false;
+    sysParam.enableVelocityAlignmentTorque = false;
+    sysParam.enableAngularFrictionTorque = false;
+    sysParam.enablePairDissipationTorque = false;
+    sysParam.enableRandNoisyTorque = false;
+
+    //torque parameters
+    sysParam.xiAngular = 6; //angular friction coeff
+    sysParam.xiPair = 6; //pair dissipation coeff
+    sysParam.zetaPolar = 0; //polar alignment coeff
+    sysParam.zetaVelocity = 0; //velocity alignment coeff
+    sysParam.sigmaTorque = 0; //SD for the torque resulted from noise
+
+    //debug parameters
+    sysParam.debugType = physParam::None; //see physparam header for full list of debug states
 }
 
 System::~System()
@@ -33,20 +93,280 @@ System::~System()
     }
 }
 
-void System::runSimulation(){
-    cmdout::cmdWrite(false, "Preparing simulation");
+void System::setLoadICData(std::string pathToParticles){
+    sysParam.loadParticles = true;
+    sysParam.pathToParticles = pathToParticles;
+}
 
-    initParticles(); //initialise particles
-    csv::exportPList(personList, sysParam.pathToLoadingCSV+"initPartData.csv", sysParam.meanR); //exports the IC data for potential later usage
+void System::setVerbose(){
+    cmdout::setVerbose();
+    cmdout::cmdWrite(true, "Setting program to verbose mode.");
+}
 
-    cmdout::cmdWrite(false, "Executing simulation");
-    simulationBegun = true; //set the simulation as begun to catch errors
-
-    for(int t = 0; t<sysParam.stepMax; t++){ // perform appropriate number of steps
-        step(t);
+void System::setParamStepSize(double stepSize){
+    if(checkParamEditable()){
+        sysParam.stepSize = stepSize;
     }
+}
 
-    cmdout::cmdWrite(true, "Simulation completed. Output at: " + vtpDumper.getPathInfo());
+void System::setParamVTPOutput(std::string outPath, std::string outFileName){
+    if(checkParamEditable()){
+        sysParam.outDirPath = outPath;
+        sysParam.outFileName = outFileName;
+    }
+}
+
+void System::setParamParticleProperties(int N, double meanR, double sigmaR, double v_0, double sigmaV, double massRadiusRatio){
+    if(checkParamEditable()){
+        sysParam.N = N;
+        sysParam.meanR = meanR;
+        sysParam.sigmaR = sigmaR;
+        sysParam.v_0 = v_0;
+        sysParam.sigmaV = sigmaV;
+        sysParam.massRadiusRatio = massRadiusRatio;
+    }
+}
+
+void System::setParamBoundaryInformation(bool periodic, double L_x, double L_y, double overlapRatio){
+    if(checkParamEditable()){
+        sysParam.periodic = periodic;
+        sysParam.L_x = L_x;
+        sysParam.L_y = L_y;
+        sysParam.overlapRatio = overlapRatio;
+    }
+}
+
+void System::setParamSysStateCSVDir(std::string pathToSysStateDir){
+    if(checkParamEditable()){
+        sysParam.pathToLoadingCSV = pathToSysStateDir;
+    }    
+}
+
+void System::setParamDumpParticles(int dumpEveryNSteps, std::string pathToParticleData){
+    if(checkParamEditable()){
+        sysParam.particleDumpSteps = dumpEveryNSteps;
+        sysParam.pathToParticleData = pathToParticleData;
+    }
+}
+
+void System::setParamDumpParticlesSingleFile(std::string pathToParticleData){
+    if(checkParamEditable()){
+        sysParam.dumpSingleParticle=true;
+        sysParam.pathToParticleData = pathToParticleData; //set the flag for dumping particle data and the corresponding path
+
+        csv::setupSingleFile(sysParam.pathToParticleData);
+    }
+}
+
+void System::setParamHarmonicInterForce(double kHarmonic){
+    if(checkParamEditable()){
+        sysParam.enableHarmonicInterForce = true;
+        sysParam.kHarmonic = kHarmonic;
+    }    
+}
+
+void System::setParamHertzianInterForce(double kHertzian){
+    if(checkParamEditable()){
+        sysParam.enableHertzianInterForce = true;
+        sysParam.kHertzian = kHertzian;
+    }    
+}
+
+void System::setParamActiveForce(double v_0, double zetaActive){
+    if(checkParamEditable()){
+        sysParam.enableActiveForce = true;
+        sysParam.v_0 = v_0;
+        sysParam.zetaActive = zetaActive;
+    }    
+}
+
+void System::setParamGroundFrictionForce(double zetaGround){
+    if(checkParamEditable()){
+        sysParam.enableGroundFrictionForce = true;
+        sysParam.zetaGround = zetaGround;
+    }    
+}
+
+void System::setParamPersonFrictionForce(double zetaPerson){
+    if(checkParamEditable()){
+        sysParam.enablePersonFrictionForce = true;
+        sysParam.zetaPerson = zetaPerson;
+    }    
+}
+
+void System::setParamRandNoisyForce(double sigmaForceX, double sigmaForceY){
+    if(checkParamEditable()){
+        sysParam.enableRandNoisyForce = true;
+        sysParam.sigmaForceX = sigmaForceX;
+        sysParam.sigmaForceY = sigmaForceY;
+    }    
+}
+
+void System::setParamPolarAlignmentTorque(double zetaPolar){
+    if(checkParamEditable()){
+        sysParam.enablePolarAlignmentTorque = true;
+        sysParam.zetaPolar = zetaPolar;
+    }
+}
+
+void System::setParamVelocityAlignmentTorque(double zetaVelocity){
+    if(checkParamEditable()){
+        sysParam.enableVelocityAlignmentTorque = true;
+        sysParam.zetaVelocity = zetaVelocity;
+    }
+}
+
+void System::setParamAngularFrictionTorque(double xiAngular){
+    if(checkParamEditable()){
+        sysParam.enableAngularFrictionTorque = true;
+        sysParam.xiAngular = xiAngular;
+    }
+}
+
+void System::setParamPairDissipationTorque(double xiPair){
+    if(checkParamEditable()){
+        sysParam.enablePairDissipationTorque = true;
+        sysParam.xiPair = xiPair;
+    }
+}
+
+void System::setParamRandNoisyTorque(double sigmaTorque){
+    if(checkParamEditable()){
+        sysParam.enableRandNoisyTorque = true;
+        sysParam.sigmaTorque = sigmaTorque;
+    }
+}
+
+void System::setParamDebugMode(int mode){
+    if(checkParamEditable()){
+        sysParam.debugType = mode;
+    }
+}
+
+void System::writeReadablePhysParam(){
+    //spaghetti code dump, writes a readable version of the physparam
+    cmdout::cmdWrite(true, "Dumping readable form of currently written parameters. [B] indicates a boolean variable.");
+    cmdout::cmdWrite(true, "Step size: "+std::to_string(sysParam.stepSize));
+    cmdout::cmdWrite(true, "Maximum number of steps: "+std::to_string(sysParam.stepMax));
+    cmdout::cmdWrite(true, "Dump .vtp files every n steps. n: "+std::to_string(sysParam.outputSteps));
+    cmdout::cmdWrite(true, "The directory to store .vtp files in: "+sysParam.outDirPath);
+    cmdout::cmdWrite(true, "Prefix to the timestamp for .vtp files: "+sysParam.outFileName);
+    cmdout::cmdWrite(true, "Output file type (should typically be vtp): "+sysParam.outFileType);
+    cmdout::cmdWrite(true, "If randomly generating N particles (or debug type 0), how many particles to generate: "+std::to_string(sysParam.N));
+    cmdout::cmdWrite(true, "Mean radius of particles: "+std::to_string(sysParam.meanR));
+    cmdout::cmdWrite(true, "Standard deviation of radius of particles: "+std::to_string(sysParam.sigmaR));
+    cmdout::cmdWrite(true, "Standard deviation of initial velocity of particles: "+std::to_string(sysParam.sigmaV));
+    cmdout::cmdWrite(true, "[B] Does the system have periodic BCs: "+std::to_string(sysParam.periodic));
+    cmdout::cmdWrite(true, "Size of the system box in the x direction: "+std::to_string(sysParam.L_x));
+    cmdout::cmdWrite(true, "Size of the system box in the y direction: "+std::to_string(sysParam.L_y));
+    cmdout::cmdWrite(true, "If generating 'boundary particles', the 'overlap ratio' between generated boundary particles: "+std::to_string(sysParam.overlapRatio));
+    cmdout::cmdWrite(true, "[B] Whether to load particle ICs from a file: "+std::to_string(sysParam.loadParticles));
+    cmdout::cmdWrite(true, "The full file path leading to the .csv file containing particle ICs: "+sysParam.pathToParticles);
+    cmdout::cmdWrite(true, "File path where CSVs for loading will be stored: "+sysParam.pathToLoadingCSV);
+    cmdout::cmdWrite(true, "Dump particle information every n steps (0 means no dumps). n: "+std::to_string(sysParam.particleDumpSteps));
+    cmdout::cmdWrite(true, "File path where particle information will be stored: "+sysParam.pathToParticleData);
+    cmdout::cmdWrite(true, "[B] Are harmonic interactional forces enabled: "+std::to_string(sysParam.enableHarmonicInterForce));
+    cmdout::cmdWrite(true, "[B] Are hertzian interactional forces enabled: "+std::to_string(sysParam.enableHertzianInterForce));
+    cmdout::cmdWrite(true, "[B] Are particle active forces enabled: "+std::to_string(sysParam.enableActiveForce));
+    cmdout::cmdWrite(true, "[B] Are particle ground friction forces enabled: "+std::to_string(sysParam.enableGroundFrictionForce));
+    cmdout::cmdWrite(true, "[B] Are particle person friction forces enabled: "+std::to_string(sysParam.enablePersonFrictionForce));
+    cmdout::cmdWrite(true, "[B] Are particle random noisy forces enabled: "+std::to_string(sysParam.enableRandNoisyForce));
+    cmdout::cmdWrite(true, "Friction parameter included only in the active force: "+std::to_string(sysParam.zetaActive));
+    cmdout::cmdWrite(true, "cmdout::cmdWrite(true, Friction parameter against the ground, included only in the ground friction force: "+std::to_string(sysParam.zetaGround));
+    cmdout::cmdWrite(true, "Friction parameter against other people, used only in person friction force: "+std::to_string(sysParam.zetaPerson));
+    cmdout::cmdWrite(true, "V_0 parameter. Affects both initial velocities and the active force: "+std::to_string(sysParam.v_0));
+    cmdout::cmdWrite(true, "Spring constant used in harmonic interactional forces: "+std::to_string(sysParam.kHarmonic));
+    cmdout::cmdWrite(true, "Spring constant used in hertzian interactional forces: "+std::to_string(sysParam.kHertzian));
+    cmdout::cmdWrite(true, "Standard deviation in the x direction for random noisy forces: "+std::to_string(sysParam.sigmaForceX));
+    cmdout::cmdWrite(true, "Standard deviation in the y direction for random noisy forces: "+std::to_string(sysParam.sigmaForceY));
+    cmdout::cmdWrite(true, "[B] Are polar alignment torques enabled: "+std::to_string(sysParam.enablePolarAlignmentTorque));
+    cmdout::cmdWrite(true, "[B] Are velocity alignment torques enabled: "+std::to_string(sysParam.enableVelocityAlignmentTorque));
+    cmdout::cmdWrite(true, "[B] Are angular friction torques enabled: "+std::to_string(sysParam.enableAngularFrictionTorque));
+    cmdout::cmdWrite(true, "[B] Are pair dissipation torques enabled: "+std::to_string(sysParam.enablePairDissipationTorque));
+    cmdout::cmdWrite(true, "[B] Are random noisy torques enabled: "+std::to_string(sysParam.enableRandNoisyTorque));
+    cmdout::cmdWrite(true, "Friction parameter for angular friction torques: "+std::to_string(sysParam.xiAngular));
+    cmdout::cmdWrite(true, "Friction parameter for pair dissipation torques: "+std::to_string(sysParam.xiPair));
+    cmdout::cmdWrite(true, "Coefficient of polar alignment torques: "+std::to_string(sysParam.zetaPolar));
+    cmdout::cmdWrite(true, "Coefficient of velocity alignment torques: "+std::to_string(sysParam.zetaVelocity));
+    cmdout::cmdWrite(true, "Standard deviation for random noisy torques: "+std::to_string(sysParam.sigmaTorque));
+    cmdout::cmdWrite(true, "Debug override. IF NOT 0, uses hardcoded overrides for initial conditions. See docs for more details: "+std::to_string(sysParam.debugType));
+    cmdout::cmdWrite(true, "[B] If dumping particle data, do we dump only a single particle to a single file: "+std::to_string(sysParam.dumpSingleParticle));
+    cmdout::cmdWrite(true, "Ratio of mass to radius^2, used for calculating mass of particles: "+std::to_string(sysParam.massRadiusRatio));
+}
+
+void System::prepareSimulation(){
+    if(simulationReady){ //throw warnings if the simulation is ready or the simulation has already begun
+        cmdout::cmdWrite(true, "Simulation attempted to be prepared again. Please prepare a simulation once at most."); 
+    } else if(simulationBegun){
+        cmdout::cmdWrite(true, "Simulation attempted to be prepared after running the simulation.");
+    } else{
+        // prepares the simulation as the old CCC system class constructor used to do
+        person::setMassRadiusRatio(sysParam.massRadiusRatio); //set the mass-radius ratio of particles now before any are generated
+
+        //handling boundary stuff here
+        bManager = boundaryManager(sysParam.periodic, sysParam.L_x, sysParam.L_y);
+
+        //preparing fManager and tManager by getting the necessary parameters from sysParam
+        fManager = force(&bManager, sysParam.zetaActive, sysParam.zetaGround, sysParam.zetaPerson,
+            sysParam.v_0, sysParam.kHarmonic, sysParam.kHertzian);
+        tManager = planarTorque(sysParam.xiAngular, sysParam.xiPair, sysParam.zetaPolar,
+            sysParam.zetaVelocity);
+
+        //setup of output manager
+        vtpDumper = output(sysParam.outFileName, sysParam.outDirPath, sysParam.outFileType, &personList);
+
+        initParticles(); //init particles at this point
+
+        //perform exporting
+        csv::exportPList(personList, sysParam.pathToLoadingCSV+"initPartData.csv", sysParam.meanR); //exports the IC data for potential later usage
+        csv::exportPhysParam(sysParam, sysParam.pathToLoadingCSV); //export the sysParam we have at this point for later usage
+
+        simulationReady = true; //at this point it's safe to run the simulation
+
+        cmdout::cmdWrite(false, "Simulation has been prepared. PhysParams are no longer editable.");
+    } 
+}
+
+void System::runSimulation(int T, bool dumpVTP, bool dumpPartData){
+    if(!simulationReady){ // throw warning is simulation has already been prepared
+        cmdout::cmdWrite(true, "Simulation has not been prepared. Please call System::prepareSimulation first.");
+    } else {
+        simulationBegun = true; //make sure the flag is set to indicate the simulation has begun running
+
+        //do T time steps
+        for(int i = 0; i < T; i++){
+            currTimeStep++;
+            step(currTimeStep);
+        }
+
+        cmdout::cmdWrite(false, "Ran "+std::to_string(T)+" time steps. Current cummulative time step is "+std::to_string(currTimeStep)); //output to CMD if verbose
+
+        //now dump VTP data if recquired
+        if(dumpVTP){
+            vtpDumper.dump(currTimeStep);
+
+            cmdout::cmdWrite(false, "Dumped VTP data on timestep "+std::to_string(currTimeStep));
+        }
+        if(dumpPartData){
+            if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
+                if(sysParam.dumpSingleParticle){
+                    csv::dumpSingleParticleData(personList, currTimeStep*sysParam.stepSize, 0); //dump a single particle if specified
+                } else { //otherwise dump all particles
+                    //make file path
+                    std::stringstream ss;
+                    ss << sysParam.pathToParticleData << "ParticleData" << currTimeStep <<".csv";
+
+                    csv::dumpParticleData(personList, ss.str(), currTimeStep*sysParam.stepSize); //dump all particles to file path
+                }
+            }
+
+            cmdout::cmdWrite(false, "Dumped particle data on timestep "+std::to_string(currTimeStep));
+        }
+    }
+}
+
+int System::getCurrSimTimeStep(){
+    return currTimeStep;
 }
 
 void System::initParticles(){
@@ -74,28 +394,6 @@ void System::initParticles(){
 }
 
 void System::step(int t){
-    //We do all dumping before we do maths.
-    //check to see if we should output on this step or not
-    if (t%sysParam.outputSteps == 0){
-        vtpDumper.dump(t);
-    }
-
-    //check to see if we should dump particle data
-    if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
-        if(t%sysParam.particleDumpSteps == 0){ //and it's the correct step to dump particle data
-            if(sysParam.dumpSingleParticle){
-                csv::dumpSingleParticleData(personList, t*sysParam.stepSize, 0); //dump a single particle if specified
-            } else { //otherwise dump all particles
-                //make file path
-                std::stringstream ss;
-                ss << sysParam.pathToParticleData << "ParticleData" << t <<".csv";
-
-                csv::dumpParticleData(personList, ss.str(), t*sysParam.stepSize); //dump all particles to file path
-            }
-        }
-    }
-
-    //Now do mathematics related stuff
     //first, check to see if neighbour lists need to be updated
     if(neighbourList::checkUpdate(&personList, &bManager)){
         neighbourList::updateLists(&personList, &bManager); //update the neighbour lists if necessary
@@ -138,6 +436,18 @@ void System::mergePList(std::vector<person> *parentList, std::vector<person> new
     }
 
     neighbourList::updateLists(&personList, &bManager); //update the neighbour lists to make the program ready for use
+}
+
+bool System::checkParamEditable(){
+    if(simulationReady){ //if the sim is ready to begin, then the sysParam should not be further edited
+        cmdout::cmdWrite(true, "Simulation has been prepared. PhysParams are not further editable.");
+        return false;
+    } else if (simulationBegun){
+        cmdout::cmdWrite(true, "Simulation has begun. PhysParams are not further editable.");
+        return false;
+    } else {
+        return true;
+    }
 }
 
 void System::calculateForcesTorques(int i){ //calculate the force and torques acting on particle i here

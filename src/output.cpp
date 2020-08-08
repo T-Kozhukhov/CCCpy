@@ -33,7 +33,7 @@ void output::dump(int tStep){
     //generate the full filenpath properly
     std::string fullFilePath; //init'ing the full file path
     std::stringstream ss;
-    ss << path << "/" << fileName << tStep << "." << fileType; //generate file name in this format and save to stream
+    ss << path << fileName << tStep << "." << fileType; //generate file name in this format and save to stream
     ss >> fullFilePath; //output stream to full file name
 
     //create a writer and set filename accordingly
@@ -45,13 +45,13 @@ void output::dump(int tStep){
     writer->SetDataModeToAscii();
     writer->Write();
 
-     cmdout::cmdWrite(false, "Stored data to: " + fullFilePath );
+    cmdout::cmdWrite(false, "Stored data to: " + fullFilePath );
 }
 
 std::string output::getPathInfo(){
     std::stringstream ss;
     std::string toReturn;
-    ss << path << "/" << fileName << "{STEP}" << "." << fileType;
+    ss << path << fileName << "{STEP}" << "." << fileType;
     ss >> toReturn;
     return toReturn;
 }

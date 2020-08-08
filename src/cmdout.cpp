@@ -1,8 +1,8 @@
-// TODO: test functionality of this class
+#include <pybind11/pybind11.h>
 
 #include "cmdout.h"
 
-#include <iostream>
+namespace py = pybind11;
 
 bool cmdout::verbose; //defining static members here
 
@@ -21,6 +21,6 @@ void cmdout::setVerbose(){
 
 void cmdout::cmdWrite(bool essential, std::string msg){
     if(essential || cmdout::verbose){
-        std::cout << msg << '\n';
+        py::print(msg); //use a python friendly way of output
     }
 }

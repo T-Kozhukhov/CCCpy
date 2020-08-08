@@ -1,6 +1,3 @@
-/*  TODO: Test functionality of dumping functions for new headers after implementing pybind
-*/
-
 #include "csv.h"
 #include "cmdout.h"
 
@@ -20,7 +17,9 @@ csv::csv()
 csv::~csv()
 {
     //dtor
-    csv::singleFile.close(); //close the file
+    if(csv::enableSinglePartFile){
+        csv::singleFile.close(); //close the singlefile if necessary
+    }
 }
 
 void csv::setupSingleFile(std::string filePath){ //set single particle dump to be enabled and prepare the file for usage
@@ -28,7 +27,7 @@ void csv::setupSingleFile(std::string filePath){ //set single particle dump to b
     csv::enableSinglePartFile = true;
 
     //add headers to singlefile
-    csv::singleFile << "xPos,yPos,xVel,yVel,polAngle,polVel" << "\n"; 
+    csv::singleFile << "currTime,xPos,yPos,xVel,yVel,polAngle,polVel,rad,glued" << "\n"; 
 }
 
 std::vector<person> csv::importPList(std::string path){
@@ -71,6 +70,7 @@ physParam csv::importPhysParam(std::string path){
     //first, get lines from the specified file
     std::vector<std::string> lines = getLines(path);
     //now, extract version
+	cmdout::cmdWrite(true, lines.at(0));
     std::vector<std::string> firstLineWords = splitLine(lines.at(0));
     int version = std::stoi(firstLineWords.at(1)); //version is stored in the second cell on the first row
 
@@ -82,6 +82,7 @@ physParam csv::importPhysParam(std::string path){
 
     //do some output
     cmdout::cmdWrite(true, "Beginning loading of parameters from " + path);
+	cmdout::cmdWrite(true, "version: "+std::to_string(version));
     //check version and call the appropriate function as necessary
     if(version==1){ //each block will process the file and return the appropriate physParam
         toReturn = extractPhysParamV1(lines);
@@ -89,7 +90,7 @@ physParam csv::importPhysParam(std::string path){
         toReturn = extractPhysParamV2(lines);
     } else {
         cmdout::cmdWrite(true, "Error: Cannot get version from physParam .csv at "+path);
-        cmdout::cmdWrite(true, "Program believes we are on PhysParam version " + version);
+        cmdout::cmdWrite(true, "Program believes we are on PhysParam version " + std::to_string(version));
         cmdout::cmdWrite(true, "Returning a blank physParam object. Expect the program to fail.");
         return physParam(); //return a blank physParam
     }
@@ -159,11 +160,10 @@ void csv::exportPhysParam(physParam param, std::string path){
     lines.push_back(csvLine); //make it the second line
 
     //finally, make a csv based on the generated lines:
-    makeCSV(lines, path+"PhysParamData.csv",""); //NOTE: PHYSPARAMS DO NOT HAVE HEADERS!!! 
-                                                    // they have a blank space on line 1, preceding the version
+    makeCSV(lines, path+"PhysParamData.csv","PhysParam Data"); //NOTE: PHYSPARAMS DO NOT HAVE HEADERS!!! 
 
     //now, save the data into a readable format
-    makeReadablePhysParam(param, path+"ParameterList_Readable.txt");
+    makeReadablePhysParam(param, path+"ParameterList_Readable.csv");
 }
 
 void csv::dumpParticleData(std::vector<person> pList, std::string pathOut, double currTime){ //do a normal particle data dump
@@ -180,18 +180,23 @@ void csv::dumpParticleData(std::vector<person> pList, std::string pathOut, doubl
         std::string yVel = std::to_string(currPerson.getVelocity().getY());
         std::string polAngle = std::to_string(currPerson.getPolAngle());
         std::string polVel = std::to_string(currPerson.getPolVelocity());
+        std::string rad = std::to_string(currPerson.getRadius());
+        std::string glued = "0";
+        if(currPerson.getGlued()){ //store the bool by storing 1 if glued, 0 otherwise
+            glued = "1";
+        }
 
         //make a stringstream and put the data in the correct format
         std::stringstream ss;
         ss << currTime << ',' << xPos << ',' << yPos << ',' << xVel << ',' << yVel << ','
-           << polAngle << ',' << polVel;
+           << polAngle << ',' << polVel << ',' << rad << ',' << glued;
         std::string currLine = ss.str();
 
         lines.push_back(currLine);//add the current line to the vector
     }
 
     //finally, make a CSV
-    makeCSV(lines, pathOut, "xPos,yPos,xVel,yVel,polAngle,polVel");
+    makeCSV(lines, pathOut, "currTime,xPos,yPos,xVel,yVel,polAngle,polVel,rad,glued");
 }
 
 void csv::dumpSingleParticleData(std::vector<person> pList, double currTime, int id){ //do a single particle data dump
@@ -207,11 +212,16 @@ void csv::dumpSingleParticleData(std::vector<person> pList, double currTime, int
         std::string yVel = std::to_string(currPerson.getVelocity().getY());
         std::string polAngle = std::to_string(currPerson.getPolAngle());
         std::string polVel = std::to_string(currPerson.getPolVelocity());
+        std::string rad = std::to_string(currPerson.getRadius());
+        std::string glued = "0";
+        if(currPerson.getGlued()){ //store the bool by storing 1 if glued, 0 otherwise
+            glued = "1";
+        }
 
         //make a stringstream and put the data in the correct format
         std::stringstream ss;
         ss << currTime << ',' << xPos << ',' << yPos << ',' << xVel << ',' << yVel << ','
-           << polAngle << ',' << polVel;
+           << polAngle << ',' << polVel << ',' << rad << ',' << glued;
         std::string currLine = ss.str();
 
         lines.push_back(currLine);//add the current line to the vector
@@ -235,8 +245,7 @@ std::vector<std::string> csv::getLines(std::string path){
     fin.close(); //close the file
 
     // first line will contain the headers, so we need to remove them
-    toReturn.erase(toReturn.begin()); //remove first element, which should contain the headers
-    // TODO: this sounds dodgy! Test this properly by inspection!
+	toReturn.erase(toReturn.begin()); //remove first element, which should contain the headers
 
     return toReturn; //return as necessary
 }
@@ -400,55 +409,53 @@ std::string csv::getPhysParamCSVLine(physParam param){ //makes a physParam csv l
 
     ///Welcome to spaghetti land
     //now write to the file
-    fout    <<"[B] indicates this is a boolean variable. A boolean has value 0 if false and 1 if true.\n"
-            <<"The current physParam version is version " << currPhysParamVersion << '\n'
-            <<'\n'
-            <<"Step size: "<<std::to_string(param.stepSize)<<'\n'
-            <<"Maximum number of steps: "<<std::to_string(param.stepMax)<<'\n'
-            <<"Dump .vtp files every n steps. n: "<<std::to_string(param.outputSteps)<<'\n'
-            <<"The directory to store .vtp files in: "<<param.outDirPath<<'\n'
-            <<"Prefix to the timestamp for .vtp files: "<<param.outFileName<<'\n'
-            <<"Output file type (should typically be vtp): "<<param.outFileType<<'\n'
-            <<"If randomly generating N particles (or debug type 0), how many particles to generate: "<<std::to_string(param.N)<<'\n'
-            <<"Mean radius of particles: "<<std::to_string(param.meanR)<<'\n'
-            <<"Standard deviation of radius of particles: "<<std::to_string(param.sigmaR)<<'\n'
-            <<"Standard deviation of initial velocity of particles: "<<std::to_string(param.sigmaV)<<'\n'
-            <<"[B] Does the system have periodic BCs: "<<std::to_string(param.periodic)<<'\n'
-            <<"Size of the system box in the x direction: "<<std::to_string(param.L_x)<<'\n'
-            <<"Size of the system box in the y direction: "<<std::to_string(param.L_y)<<'\n'
-            <<"If generating 'boundary particles', the 'overlap ratio' between generated boundary particles: "<<std::to_string(param.overlapRatio)<<'\n'
-            <<"[B] Whether to load particle ICs from a file: "<<std::to_string(param.loadParticles)<<'\n'
-            <<"The full file path leading to the .csv file containing particle ICs: "<<param.pathToParticles<<'\n'
-            <<"File path where CSVs for loading will be stored: "<<param.pathToLoadingCSV<<'\n'
-            <<"Dump particle information every n steps (0 means no dumps). n: "<<std::to_string(param.particleDumpSteps)<<'\n'
-            <<"File path where particle information will be stored: "<<param.pathToParticleData<<'\n'
-            <<"[B] Are harmonic interactional forces enabled: "<<std::to_string(param.enableHarmonicInterForce)<<'\n'
-            <<"[B] Are hertzian interactional forces enabled: "<<std::to_string(param.enableHertzianInterForce)<<'\n'
-            <<"[B] Are particle active forces enabled: "<<std::to_string(param.enableActiveForce)<<'\n'
-            <<"[B] Are particle ground friction forces enabled: "<<std::to_string(param.enableGroundFrictionForce)<<'\n'
-            <<"[B] Are particle person friction forces enabled: "<<std::to_string(param.enablePersonFrictionForce)<<'\n'
-            <<"[B] Are particle random noisy forces enabled: "<<std::to_string(param.enableRandNoisyForce)<<'\n'
-            <<"Friction parameter included only in the active force: "<<std::to_string(param.zetaActive)<<'\n'
-            <<"Friction parameter against the ground, included only in the ground friction force: "<<std::to_string(param.zetaGround)<<'\n'
-            <<"Friction parameter against other people, used only in person friction force: "<<std::to_string(param.zetaPerson)<<'\n'
-            <<"V_0 parameter. Affects both initial velocities and the active force: "<<std::to_string(param.v_0)<<'\n'
-            <<"Spring constant used in harmonic interactional forces: "<<std::to_string(param.kHarmonic)<<'\n'
-            <<"Spring constant used in hertzian interactional forces: "<<std::to_string(param.kHertzian)<<'\n'
-            <<"Standard deviation in the x direction for random noisy forces: "<<std::to_string(param.sigmaForceX)<<'\n'
-            <<"Standard deviation in the y direction for random noisy forces: "<<std::to_string(param.sigmaForceY)<<'\n'
-            <<"[B] Are polar alignment torques enabled: "<<std::to_string(param.enablePolarAlignmentTorque)<<'\n'
-            <<"[B] Are velocity alignment torques enabled: "<<std::to_string(param.enableVelocityAlignmentTorque)<<'\n'
-            <<"[B] Are angular friction torques enabled: "<<std::to_string(param.enableAngularFrictionTorque)<<'\n'
-            <<"[B] Are pair dissipation torques enabled: "<<std::to_string(param.enablePairDissipationTorque)<<'\n'
-            <<"[B] Are random noisy torques enabled: "<<std::to_string(param.enableRandNoisyTorque)<<'\n'
-            <<"Friction parameter for angular friction torques: "<<std::to_string(param.xiAngular)<<'\n'
-            <<"Friction parameter for pair dissipation torques: "<<std::to_string(param.xiPair)<<'\n'
-            <<"Coefficient of polar alignment torques: "<<std::to_string(param.zetaPolar)<<'\n'
-            <<"Coefficient of velocity alignment torques: "<<std::to_string(param.zetaVelocity)<<'\n'
-            <<"Standard deviation for random noisy torques: "<<std::to_string(param.sigmaTorque)<<'\n'
-            <<"Debug override. IF NOT 0, uses hardcoded overrides for initial conditions. See docs for more details: "<<std::to_string(param.debugType)<<'\n'
-            <<"[B] If dumping particle data, do we dump only a single particle to a single file: "<<std::to_string(param.dumpSingleParticle)<<'\n'
-            <<"Ratio of mass to radius^2, used for calculating mass of particles: "<<std::to_string(param.massRadiusRatio);
+    fout    <<"currPhysParamVersion," << currPhysParamVersion << '\n'
+            <<"stepSize,"<<std::to_string(param.stepSize)<<'\n'
+            <<"stepMax,"<<std::to_string(param.stepMax)<<'\n'
+            <<"outputSteps,"<<std::to_string(param.outputSteps)<<'\n'
+            <<"outDirPath,"<<param.outDirPath<<'\n'
+            <<"outFileName,"<<param.outFileName<<'\n'
+            <<"outFileType,"<<param.outFileType<<'\n'
+            <<"N,"<<std::to_string(param.N)<<'\n'
+            <<"meanR,"<<std::to_string(param.meanR)<<'\n'
+            <<"sigmaR,"<<std::to_string(param.sigmaR)<<'\n'
+            <<"sigmaV,"<<std::to_string(param.sigmaV)<<'\n'
+            <<"periodic,"<<std::to_string(param.periodic)<<'\n'
+            <<"L_x,"<<std::to_string(param.L_x)<<'\n'
+            <<"L_y,"<<std::to_string(param.L_y)<<'\n'
+            <<"overlapRatio,"<<std::to_string(param.overlapRatio)<<'\n'
+            <<"loadParticles,"<<std::to_string(param.loadParticles)<<'\n'
+            <<"pathToParticles,"<<param.pathToParticles<<'\n'
+            <<"pathToLoadingCSV,"<<param.pathToLoadingCSV<<'\n'
+            <<"particleDumpSteps,"<<std::to_string(param.particleDumpSteps)<<'\n'
+            <<"pathToParticleData,"<<param.pathToParticleData<<'\n'
+            <<"enableHarmonicInterForce,"<<std::to_string(param.enableHarmonicInterForce)<<'\n'
+            <<"enableHertzianInterForce,"<<std::to_string(param.enableHertzianInterForce)<<'\n'
+            <<"enableActiveForce,"<<std::to_string(param.enableActiveForce)<<'\n'
+            <<"enableGroundFrictionForce,"<<std::to_string(param.enableGroundFrictionForce)<<'\n'
+            <<"enablePersonFrictionForce,"<<std::to_string(param.enablePersonFrictionForce)<<'\n'
+            <<"enableRandNoisyForce,"<<std::to_string(param.enableRandNoisyForce)<<'\n'
+            <<"zetaActive,"<<std::to_string(param.zetaActive)<<'\n'
+            <<"zetaGround,"<<std::to_string(param.zetaGround)<<'\n'
+            <<"zetaPerson,"<<std::to_string(param.zetaPerson)<<'\n'
+            <<"v_0,"<<std::to_string(param.v_0)<<'\n'
+            <<"kHarmonic,"<<std::to_string(param.kHarmonic)<<'\n'
+            <<"kHertzian,"<<std::to_string(param.kHertzian)<<'\n'
+            <<"sigmaForceX,"<<std::to_string(param.sigmaForceX)<<'\n'
+            <<"sigmaForceY,"<<std::to_string(param.sigmaForceY)<<'\n'
+            <<"enablePolarAlignmentTorque,"<<std::to_string(param.enablePolarAlignmentTorque)<<'\n'
+            <<"enableVelocityAlignmentTorque,"<<std::to_string(param.enableVelocityAlignmentTorque)<<'\n'
+            <<"enableAngularFrictionTorque,"<<std::to_string(param.enableAngularFrictionTorque)<<'\n'
+            <<"enablePairDissipationTorque,"<<std::to_string(param.enablePairDissipationTorque)<<'\n'
+            <<"enableRandNoisyTorque,"<<std::to_string(param.enableRandNoisyTorque)<<'\n'
+            <<"xiAngular,"<<std::to_string(param.xiAngular)<<'\n'
+            <<"xiPair,"<<std::to_string(param.xiPair)<<'\n'
+            <<"zetaPolar,"<<std::to_string(param.zetaPolar)<<'\n'
+            <<"zetaVelocity,"<<std::to_string(param.zetaVelocity)<<'\n'
+            <<"sigmaTorque,"<<std::to_string(param.sigmaTorque)<<'\n'
+            <<"debugType,"<<std::to_string(param.debugType)<<'\n'
+            <<"dumpSingleParticle,"<<std::to_string(param.dumpSingleParticle)<<'\n'
+            <<"massRadiusRatio,"<<std::to_string(param.massRadiusRatio);
 
     fout.close(); //close the file at end
  }

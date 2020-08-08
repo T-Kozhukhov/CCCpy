@@ -1,0 +1,6 @@
+.vscode/settings.json
+.gitignore
+build/
+scripts/CCCpy.so
+scripts/Demonstration/
+scripts/utilities.pyc

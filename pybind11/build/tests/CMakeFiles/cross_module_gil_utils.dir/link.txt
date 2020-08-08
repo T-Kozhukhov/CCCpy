@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC -Os -DNDEBUG  -shared  -o ../../tests/cross_module_gil_utils.cpython-36m-x86_64-linux-gnu.so CMakeFiles/cross_module_gil_utils.dir/cross_module_gil_utils.cpp.o -flto 
