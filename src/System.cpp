@@ -353,29 +353,41 @@ void System::runSimulation(int T, bool dumpVTPdata, bool dumpPartdata){
 }
 
 int System::getCurrSimTimeStep(){
-    return currTimeStep;
+    if(simulationBegun){
+        return currTimeStep;
+    } else {
+        cmdout::cmdWrite(true, "Attempted to get current time step when simulation has not begun.");
+    }
 }
 
 void System::dumpVTP(){
-    vtpDumper.dump(currTimeStep);
+    if(simulationBegun){
+        vtpDumper.dump(currTimeStep);
 
-    cmdout::cmdWrite(false, "Dumped VTP data on timestep "+std::to_string(currTimeStep));
+        cmdout::cmdWrite(false, "Dumped VTP data on timestep "+std::to_string(currTimeStep));
+    } else {
+        cmdout::cmdWrite(true, "Attempted to dump VTP when simulation has not begun.");
+    }
 }
 
 void System::dumpPartData(){
-    if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
-        if(sysParam.dumpSingleParticle){
-            csv::dumpSingleParticleData(personList, currTimeStep*sysParam.stepSize, singleParticleDumpID); //dump a single particle if specified
-        } else { //otherwise dump all particles
-            //make file path
-            std::stringstream ss;
-            ss << sysParam.pathToParticleData << "ParticleData" << currTimeStep <<".csv";
+    if(simulationBegun){
+        if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
+            if(sysParam.dumpSingleParticle){
+                csv::dumpSingleParticleData(personList, currTimeStep*sysParam.stepSize, singleParticleDumpID); //dump a single particle if specified
+            } else { //otherwise dump all particles
+                //make file path
+                std::stringstream ss;
+                ss << sysParam.pathToParticleData << "ParticleData" << currTimeStep <<".csv";
 
-            csv::dumpParticleData(personList, ss.str(), currTimeStep*sysParam.stepSize); //dump all particles to file path
+                csv::dumpParticleData(personList, ss.str(), currTimeStep*sysParam.stepSize); //dump all particles to file path
+            }
         }
-    }
 
-    cmdout::cmdWrite(false, "Dumped particle data on timestep "+std::to_string(currTimeStep));
+        cmdout::cmdWrite(false, "Dumped particle data on timestep "+std::to_string(currTimeStep));
+    } else {
+        cmdout::cmdWrite(true, "Attempted to dump particle data when simulation has not begun.");
+    }
 }
 
 void System::initParticles(){
