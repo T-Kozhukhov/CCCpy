@@ -70,9 +70,13 @@ void output::addParticlesToVTKDataset(vtkSmartPointer<vtkPoints> &pts, vtkSmartP
     force->SetNumberOfComponents(3);
     force->SetName("Force");
 
-    vtkSmartPointer<vtkDoubleArray> polarity = vtkSmartPointer<vtkDoubleArray>::New();
-    polarity->SetNumberOfComponents(1);
-    polarity->SetName("Polarity");
+    vtkSmartPointer<vtkDoubleArray> polarityVector = vtkSmartPointer<vtkDoubleArray>::New();
+    polarityVector->SetNumberOfComponents(3);
+    polarityVector->SetName("Polarity");
+
+    vtkSmartPointer<vtkDoubleArray> polarityAngle = vtkSmartPointer<vtkDoubleArray>::New();
+    polarityAngle->SetNumberOfComponents(1);
+    polarityAngle->SetName("Polarity Angle");
 
     vtkSmartPointer<vtkDoubleArray> polVelocity = vtkSmartPointer<vtkDoubleArray>::New();
     polVelocity->SetNumberOfComponents(1);
@@ -81,6 +85,8 @@ void output::addParticlesToVTKDataset(vtkSmartPointer<vtkPoints> &pts, vtkSmartP
     vtkSmartPointer<vtkDoubleArray> radius = vtkSmartPointer<vtkDoubleArray>::New();
     radius->SetNumberOfComponents(1);
     radius->SetName("Radius");
+
+    //TODO: Add a polar vector to the dump here
 
     //now loop through particles and add their data to the appropriate arrays:
     for(unsigned int i=0; i<pList->size(); i++){
@@ -100,9 +106,14 @@ void output::addParticlesToVTKDataset(vtkSmartPointer<vtkPoints> &pts, vtkSmartP
         double forces[3] = {pList->at(i).getForce().getX(), pList->at(i).getForce().getY(),0};
         force->InsertNextTuple(forces);
 
-        //polarity
-        double pol[1] = {pList->at(i).getPolAngle()};
-        polarity->InsertNextTuple(pol);
+        //polar vector
+        mathVector unitPol = mathVector::getPolarVector(1, pList->at(i).getPolAngle()); //construct polar vector first
+        double pol[3] = {unitPol.getX(), unitPol.getY(),0};
+        polarityVector->InsertNextTuple(pol);
+
+        //polarity angle
+        double polAngle[1] = {pList->at(i).getPolAngle()};
+        polarityAngle->InsertNextTuple(polAngle);
 
         //polar velocity
         double polVel[1] = {pList->at(i).getPolVelocity()};
@@ -119,7 +130,8 @@ void output::addParticlesToVTKDataset(vtkSmartPointer<vtkPoints> &pts, vtkSmartP
     polyData->GetPointData()->AddArray(IDs);
     polyData->GetPointData()->AddArray(velocity);
     polyData->GetPointData()->AddArray(force);
-    polyData->GetPointData()->AddArray(polarity);
+    polyData->GetPointData()->AddArray(polarityVector);
+    polyData->GetPointData()->AddArray(polarityAngle);
     polyData->GetPointData()->AddArray(polVelocity);
     polyData->GetPointData()->AddArray(radius);
 }

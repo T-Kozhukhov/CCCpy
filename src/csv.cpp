@@ -27,7 +27,7 @@ void csv::setupSingleFile(std::string filePath){ //set single particle dump to b
     csv::enableSinglePartFile = true;
 
     //add headers to singlefile
-    csv::singleFile << "currTime,xPos,yPos,xVel,yVel,polAngle,polVel,rad,glued" << "\n"; 
+    csv::singleFile << "currTime,xPos,yPos,xVel,yVel,polAngle,polVel,xPol,yPol,rad,glued" << "\n"; 
 }
 
 std::vector<person> csv::importPList(std::string path){
@@ -180,23 +180,29 @@ void csv::dumpParticleData(std::vector<person> pList, std::string pathOut, doubl
         std::string yVel = std::to_string(currPerson.getVelocity().getY());
         std::string polAngle = std::to_string(currPerson.getPolAngle());
         std::string polVel = std::to_string(currPerson.getPolVelocity());
+
+        //get unit polarity here
+        mathVector unitPol = mathVector::getPolarVector(1, currPerson.getPolAngle());
+        std::string xPol = std::to_string(unitPol.getX());
+        std::string yPol = std::to_string(unitPol.getY());
+
         std::string rad = std::to_string(currPerson.getRadius());
-        std::string glued = "0";
+        std::string glued = "1";
         if(currPerson.getGlued()){ //store the bool by storing 1 if glued, 0 otherwise
-            glued = "1";
+            glued = "2";
         }
 
         //make a stringstream and put the data in the correct format
         std::stringstream ss;
         ss << currTime << ',' << xPos << ',' << yPos << ',' << xVel << ',' << yVel << ','
-           << polAngle << ',' << polVel << ',' << rad << ',' << glued;
+           << polAngle << ',' << polVel << ',' << xPol << ',' << yPol << ',' << rad << ',' << glued;
         std::string currLine = ss.str();
 
         lines.push_back(currLine);//add the current line to the vector
     }
 
     //finally, make a CSV
-    makeCSV(lines, pathOut, "currTime,xPos,yPos,xVel,yVel,polAngle,polVel,rad,glued");
+    makeCSV(lines, pathOut, "currTime,xPos,yPos,xVel,yVel,polAngle,polVel,xPol,yPol,rad,glued");
 }
 
 void csv::dumpSingleParticleData(std::vector<person> pList, double currTime, int id){ //do a single particle data dump
@@ -212,16 +218,22 @@ void csv::dumpSingleParticleData(std::vector<person> pList, double currTime, int
         std::string yVel = std::to_string(currPerson.getVelocity().getY());
         std::string polAngle = std::to_string(currPerson.getPolAngle());
         std::string polVel = std::to_string(currPerson.getPolVelocity());
+
+        //get unit polarity here
+        mathVector unitPol = mathVector::getPolarVector(1, currPerson.getPolAngle());
+        std::string xPol = std::to_string(unitPol.getX());
+        std::string yPol = std::to_string(unitPol.getY());
+
         std::string rad = std::to_string(currPerson.getRadius());
-        std::string glued = "0";
+        std::string glued = "1";
         if(currPerson.getGlued()){ //store the bool by storing 1 if glued, 0 otherwise
-            glued = "1";
+            glued = "2";
         }
 
         //make a stringstream and put the data in the correct format
         std::stringstream ss;
         ss << currTime << ',' << xPos << ',' << yPos << ',' << xVel << ',' << yVel << ','
-           << polAngle << ',' << polVel << ',' << rad << ',' << glued;
+           << polAngle << ',' << polVel << ',' << xPol << ',' << yPol << ',' << rad << ',' << glued;
         std::string currLine = ss.str();
 
         lines.push_back(currLine);//add the current line to the vector
