@@ -50,8 +50,11 @@ class System
         // Main functions for operation //////////////////////////////////////////////////////////////
         void writeReadablePhysParam(); //writes out the current parameters in readable form
         void prepareSimulation(); // function which prepares the simulation to be run
-        void runSimulation(int T, bool dumpVTP, bool dumpPartData);
+        void runSimulation(int T, bool dumpVTPdata, bool dumpPartdata);
         int getCurrSimTimeStep(); // returns the current time step since the simulation began
+
+        void dumpVTP(); // dump VTP data
+        void dumpPartData(); // dump particle data
 
     private:
         //system parameters

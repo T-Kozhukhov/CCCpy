@@ -328,7 +328,7 @@ void System::prepareSimulation(){
     } 
 }
 
-void System::runSimulation(int T, bool dumpVTP, bool dumpPartData){
+void System::runSimulation(int T, bool dumpVTPdata, bool dumpPartdata){
     if(!simulationReady){ // throw warning is simulation has already been prepared
         cmdout::cmdWrite(true, "Simulation has not been prepared. Please call System::prepareSimulation first.");
     } else {
@@ -343,31 +343,39 @@ void System::runSimulation(int T, bool dumpVTP, bool dumpPartData){
         cmdout::cmdWrite(false, "Ran "+std::to_string(T)+" time steps. Current cummulative time step is "+std::to_string(currTimeStep)); //output to CMD if verbose
 
         //now dump VTP data if recquired
-        if(dumpVTP){
-            vtpDumper.dump(currTimeStep);
-
-            cmdout::cmdWrite(false, "Dumped VTP data on timestep "+std::to_string(currTimeStep));
+        if(dumpVTPdata){
+            dumpVTP();
         }
-        if(dumpPartData){
-            if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
-                if(sysParam.dumpSingleParticle){
-                    csv::dumpSingleParticleData(personList, currTimeStep*sysParam.stepSize, singleParticleDumpID); //dump a single particle if specified
-                } else { //otherwise dump all particles
-                    //make file path
-                    std::stringstream ss;
-                    ss << sysParam.pathToParticleData << "ParticleData" << currTimeStep <<".csv";
-
-                    csv::dumpParticleData(personList, ss.str(), currTimeStep*sysParam.stepSize); //dump all particles to file path
-                }
-            }
-
-            cmdout::cmdWrite(false, "Dumped particle data on timestep "+std::to_string(currTimeStep));
+        if(dumpPartdata){
+            dumpPartData();
         }
     }
 }
 
 int System::getCurrSimTimeStep(){
     return currTimeStep;
+}
+
+void System::dumpVTP(){
+    vtpDumper.dump(currTimeStep);
+
+    cmdout::cmdWrite(false, "Dumped VTP data on timestep "+std::to_string(currTimeStep));
+}
+
+void System::dumpPartData(){
+    if(sysParam.particleDumpSteps!=0){ //if we're supposed to dump particle data....
+        if(sysParam.dumpSingleParticle){
+            csv::dumpSingleParticleData(personList, currTimeStep*sysParam.stepSize, singleParticleDumpID); //dump a single particle if specified
+        } else { //otherwise dump all particles
+            //make file path
+            std::stringstream ss;
+            ss << sysParam.pathToParticleData << "ParticleData" << currTimeStep <<".csv";
+
+            csv::dumpParticleData(personList, ss.str(), currTimeStep*sysParam.stepSize); //dump all particles to file path
+        }
+    }
+
+    cmdout::cmdWrite(false, "Dumped particle data on timestep "+std::to_string(currTimeStep));
 }
 
 void System::initParticles(){

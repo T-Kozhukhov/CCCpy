@@ -63,5 +63,8 @@ PYBIND11_MODULE(CCCpy, m) {
         .def("runSimulation", &System::runSimulation, 
             "Runs the simulation for T time steps, allowing you to dump either VTP or particle data files as you wish.")
         .def("getCurrSimTimeStep", &System::getCurrSimTimeStep, 
-            "Utility function. Returns the current cummulative system time step.");
+            "Utility function. Returns the current cummulative system time step.")
+
+        .def("dumpVTP", &System::dumpVTP, "Dump VTP files at the current time step.")    
+        .def("dumpPartData", &System::dumpPartData, "Dump particle data .csv files at the current time step.");    
 }
