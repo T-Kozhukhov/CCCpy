@@ -42,7 +42,7 @@ def setNoFromDensity(s, density, L_x, L_y, meanR, sigmaR, v_0, sigmaV, massRadiu
     N =  round(density*area/(math.pi*meanR**2)) # compute ideal number of particles
 
     # set the particle properties and boundary information and return
-    s.SetParamParticleProperties(N, meanR, sigmaR, v_0, sigmaV, massRadiusRatio)
+    s.setParamParticleProperties(N, meanR, sigmaR, v_0, sigmaV, massRadiusRatio)
     s.setParamBoundaryInformation(periodic, L_x, L_y, overlapRatio)
     return s
 
@@ -50,9 +50,9 @@ def setNoFromDensity(s, density, L_x, L_y, meanR, sigmaR, v_0, sigmaV, massRadiu
 def setBoxFromDensity(s, density, N, meanR, sigmaR, v_0, sigmaV, massRadiusRatio, periodic, overlapRatio):
     # Set the size of the boundary box fropm the density of the system and the number of intended particles.
     # Effectively a wrapper for setParamParticleProperties() and setParamBoundaryInformation()
-    L = math.sqrt(N*math.pi*meanR**2/density) # compute the length recquired
+    L = math.sqrt(N*math.pi*(meanR**2)/density) # compute the length recquired
 
     #set the particle properties and boundary information and return
-    s.SetParamParticleProperties(N, meanR, sigmaR, v_0, sigmaV, massRadiusRatio)
+    s.setParamParticleProperties(N, meanR, sigmaR, v_0, sigmaV, massRadiusRatio)
     s.setParamBoundaryInformation(periodic, L, L, overlapRatio)
     return s

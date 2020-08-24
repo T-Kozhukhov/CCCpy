@@ -31,13 +31,9 @@ make
 ```
 This will make a compiled Python binary CCCpy(dot)so containing the System class, the main interface for running CCC simulations from Python. 
 
-## Usage and Tutorial
+## Basic Tutorial
 Move the compiled binary to the same directory as where you intend to run your Python controlling script. 
 
 To test usage, you can try running the script at /scripts/demonstration.py which demonstrates basic usage of CCCpy - Copy the Python binary to /scripts/ and then from that directory call ``python demonstration.py``. This script creates a subdirectory called 'Demonstration' with CCC files in "experiment format" and runs a simulation demonstrating Active Jamming behaviour (S Henkes, 2011). The .vtp files contained within the 'Demonstration/VTP/' can be opened and displayed in ParaView. 
 
-For full documentation, see the (unfinished!) wiki [here](https://github.com/T-Kozhukhov/CCCpy/wiki)!
-
-TODO: Mention that basic reminders for parameters can be found in the Python docs for each function both here and in wiki. 
-
-TODO: Finish docs wiki on Github.
+A tutorial on general usage is provided [here](https://github.com/T-Kozhukhov/CCCpy/wiki). After importing CCCpy in Python you can call ``help(CCCpy)`` to get information on the available function calls and their respective parameters. 

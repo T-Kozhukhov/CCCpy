@@ -86,8 +86,6 @@ void output::addParticlesToVTKDataset(vtkSmartPointer<vtkPoints> &pts, vtkSmartP
     radius->SetNumberOfComponents(1);
     radius->SetName("Radius");
 
-    //TODO: Add a polar vector to the dump here
-
     //now loop through particles and add their data to the appropriate arrays:
     for(unsigned int i=0; i<pList->size(); i++){
         //IDs
