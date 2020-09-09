@@ -8,20 +8,22 @@ To compile and use the program, the following must be installed:
 - CMake. Set to require version 3.1 or above but easily changed by an experienced user.
 - GNU Scientific Library (I used v2.4)
 - Visualisation ToolKit (VTK) **v6 or above is required** (I used v6.3)
-- Python 2 **exclusively** (This is due to a bug where VTK seems to force Python 2) 
+- Python (I assume you use Python 2 but if you recquire Python 3 you can easily edit the scripts as such)
 
 GSL and VTK can be installed on Ubuntu using the following top-level packages:
 ```
 libgsl-dev
 libvtk6-dev
 ```
+Note that if you install VTK using apt above then you **must** use Python 2, as that version is configured for Python 2 only. Other versions of VTK installed via apt may work but this is untested. If you require Python 3 try installing VTK from source instead. 
+
 Output .vtp visualisation files can be read using the ParaView software.
 
 Pybind11 is included as part of the repo. 
 
-TODO: Edit requirements if Python issue is fixed
-
 ## Compiling the Python Binary 
+Note that I assume you are compiling the binary for Python 2 (due to the analysis code we were using). If you are using Python 3 then you are recommended to configure VTK from source and force it to use Python 3 in cmake. You will also need to edit CMakeLists.txt on lines 15 and 18. Finally, you will need to pass CMake the location of your VTK build directory when configuring CCCpy. 
+
 The python binary is designed to be compiled via CMake. It is strongly recommended to build in a build directory. A standard build process involves calling the following from the root of the CCCpy directory:
 ```
 mkdir build

@@ -4,3 +4,5 @@ build/
 scripts/CCCpy.so
 scripts/Demonstration/
 scripts/utilities.pyc
+.vscode/launch.json
+scripts/__pycache__
