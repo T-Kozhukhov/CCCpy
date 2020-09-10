@@ -7,7 +7,7 @@ Designed for UNIX systems and has been tested to work on Ubuntu Linux, Ubuntu vi
 To compile and use the program, the following must be installed:
 - CMake. Set to require version 3.1 or above but easily changed by an experienced user.
 - GNU Scientific Library (I used v2.4)
-- Visualisation ToolKit (VTK) **v6 or above is required** (I used v6.3)
+- Visualisation ToolKit (VTK) **v6 or above is required** (I have verified with v6.3 and v9.0.1)
 - Python (I assume you use Python 2 but if you recquire Python 3 you can easily edit the scripts as such)
 
 GSL and VTK can be installed on Ubuntu using the following top-level packages:
