@@ -2,6 +2,7 @@
 
 #include "cmdout.h"
 #include <sstream>
+#include <iomanip>
 
 output::output(){
     //empty ctor
@@ -33,7 +34,8 @@ void output::dump(int tStep){
     //generate the full filenpath properly
     std::string fullFilePath; //init'ing the full file path
     std::stringstream ss;
-    ss << path << fileName << tStep << "." << fileType; //generate file name in this format and save to stream
+    ss << path << fileName << std::setfill('0') << std::setw(9) << tStep << "." << fileType; //generate file name in this format and save to stream
+    //fill to fix issues with UNIX file ordering
     ss >> fullFilePath; //output stream to full file name
 
     //create a writer and set filename accordingly

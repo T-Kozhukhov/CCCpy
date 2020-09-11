@@ -378,7 +378,7 @@ void System::dumpPartData(){
             } else { //otherwise dump all particles
                 //make file path
                 std::stringstream ss;
-                ss << sysParam.pathToParticleData << "ParticleData" << currTimeStep <<".csv";
+                ss << sysParam.pathToParticleData << "ParticleData" << std::setfill('0') << std::setw(9) << currTimeStep <<".csv";
 
                 csv::dumpParticleData(personList, ss.str(), currTimeStep*sysParam.stepSize); //dump all particles to file path
             }
