@@ -41,6 +41,11 @@ mathVector force::computeHarmonicInterForce(person* p_i, person* p_j){
 
     //now, calculate the scalar at the front of the interaction force
     double interScalar = (-kHarmonic)*(radius_i + radius_j - vecMagn);
+    //we want glued particles to be "stronger" so multiply by a scalar
+    if(p_i->getGlued() || p_j->getGlued()){
+        interScalar *= bManager->getCollisionMultiplier();
+    }
+
     //perform check on interScalar, as it MUST non-positive
     if (interScalar > 0){
         interScalar = 0;
@@ -75,7 +80,15 @@ mathVector force::computeHertzianInterForce(person* p_i, person* p_j){
     }
     //do the same as before, but now the compFactor has power 3/2 due to Hertzian things....
     double interScalar = (-kHertzian)*std::sqrt(compFactor*compFactor*compFactor); //using this instead of pow(... , 3/2) is twice as fast (typically)
+    //we want glued particles to be "stronger" so multiply by a scalar
+    if(p_i->getGlued() || p_j->getGlued()){
+        interScalar *= bManager->getCollisionMultiplier();
+    }
+    
     //perform check on interScalar, as it MUST be non-positive
+    if (interScalar > 0){
+        interScalar = 0;
+    }
 
     mathVector forceVec = unitVecDiff*interScalar; // set the vector of the force as required
     return forceVec; // return a force based on the above force vector

@@ -107,6 +107,9 @@ physParam csv::importPhysParam(std::string path){
         cmdout::cmdWrite(true, " (double) massRadiusRatio = 1");
         toReturn.massRadiusRatio = 1;
     case 2:
+        cmdout::cmdWrite(true, " (double) collisionMultiplier = 1");
+        toReturn.collisionMultiplier = 1;
+    case 3:
         break;
     }
 
@@ -375,6 +378,20 @@ physParam csv::extractPhysParamV2(std::vector<std::string> lines){ //extract a v
     return toReturn;
 }
 
+physParam csv::extractPhysParamV3(std::vector<std::string> lines){ //extract a v3 physParam
+    // standard setup
+    physParam toReturn;
+    std::vector<std::string> words = splitLine(lines.at(0));
+
+    // extract all version 1 values here
+    toReturn = extractPhysParamV2(lines);
+
+    //Then extract the newly added values
+    toReturn.collisionMultiplier = std::stoi(words.at(46));
+
+    return toReturn;
+}
+
 std::string csv::getPhysParamCSVLine(physParam param){ //makes a physParam csv line for the current version of physParam
     std::stringstream ss; //make a string stream
 
@@ -410,7 +427,8 @@ std::string csv::getPhysParamCSVLine(physParam param){ //makes a physParam csv l
         <<std::to_string(param.xiAngular)<<','<<std::to_string(param.xiPair)<<','
         <<std::to_string(param.zetaPolar)<<','<<std::to_string(param.zetaVelocity)<<','
         <<std::to_string(param.sigmaTorque)<<','<<std::to_string(param.debugType)<<','
-        <<std::to_string(param.dumpSingleParticle)<<','<<std::to_string(param.massRadiusRatio)<<',';
+        <<std::to_string(param.dumpSingleParticle)<<','<<std::to_string(param.massRadiusRatio)<<','
+        <<','<<std::to_string(param.collisionMultiplier);
     return ss.str(); //finally return the necessary string
 }
 
@@ -436,6 +454,7 @@ std::string csv::getPhysParamCSVLine(physParam param){ //makes a physParam csv l
             <<"L_x,"<<std::to_string(param.L_x)<<'\n'
             <<"L_y,"<<std::to_string(param.L_y)<<'\n'
             <<"overlapRatio,"<<std::to_string(param.overlapRatio)<<'\n'
+            <<"collisionMultiplier,"<<std::to_string(param.collisionMultiplier)<<'\n'
             <<"loadParticles,"<<std::to_string(param.loadParticles)<<'\n'
             <<"pathToParticles,"<<param.pathToParticles<<'\n'
             <<"pathToLoadingCSV,"<<param.pathToLoadingCSV<<'\n'

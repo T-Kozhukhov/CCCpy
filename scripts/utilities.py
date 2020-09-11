@@ -34,7 +34,7 @@ def setExperimentDirectory(s, pathToDir, dumpingType, singleDumpID):
         s.setParamDumpParticles(dumpingType, partDataDir)
     return s #at the end return the system
 
-# TODO: test function
+# TODO: Function is borked, fix it! Redo for new collision multiplier parameter
 def setNoFromDensity(s, density, L_x, L_y, meanR, sigmaR, v_0, sigmaV, massRadiusRatio, periodic, overlapRatio):
     # Set the number of particles from the density of the system and the size. 
     # Effectively a wrapper for setParamParticleProperties() and setParamBoundaryInformation()
@@ -46,7 +46,7 @@ def setNoFromDensity(s, density, L_x, L_y, meanR, sigmaR, v_0, sigmaV, massRadiu
     s.setParamBoundaryInformation(periodic, L_x, L_y, overlapRatio)
     return s
 
-# TODO: test function
+# TODO: Function is borked, fix it! Redo for new collision multiplier parameter
 def setBoxFromDensity(s, density, N, meanR, sigmaR, v_0, sigmaV, massRadiusRatio, periodic, overlapRatio):
     # Set the size of the boundary box fropm the density of the system and the number of intended particles.
     # Effectively a wrapper for setParamParticleProperties() and setParamBoundaryInformation()

@@ -24,7 +24,7 @@ class System
         void setParamStepSize(double stepSize); //sets step size for the sim
         void setParamVTPOutput(std::string outPath, std::string outFileName); //sets vtp output information for the sim
         void setParamParticleProperties(int N, double meanR, double sigmaR, double v_0, double sigmaV, double massRadiusRatio); //sets information on individual particles for the sim
-        void setParamBoundaryInformation(bool periodic, double L_x, double L_y, double overlapRatio); //sets information on the boundary for the sim
+        void setParamBoundaryInformation(bool periodic, double L_x, double L_y, double overlapRatio, double CollisionMultiplier); //sets information on the boundary for the sim
        
         void setParamSysStateCSVDir(std::string pathToSysStateDir); //sets the path to place the phyparam and init particle state csvs
         void setParamDumpParticles(int dumpEveryNSteps, std::string pathToParticleData); // file path to the dir where particle data should be stored

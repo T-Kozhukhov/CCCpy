@@ -11,7 +11,7 @@ s = CCCpy.System() # make an instance of the System class
 s.setParamStepSize(0.01)
 s=setExperimentDirectory(s, "./Demonstration/", 1, 0) #note this utility function recquires that it be called differently
 s.setParamParticleProperties(500, 1, 0.03, 0.05, 0, 1)
-s.setParamBoundaryInformation(False, 40, 40, 0.25)
+s.setParamBoundaryInformation(False, 40, 40, 0.25, 1)
 
 s.setParamHarmonicInterForce(1)
 s.setParamActiveForce(0.05, 0.1)

@@ -9,15 +9,17 @@ boundaryManager::boundaryManager(){
     L_x = 10;
     L_y = 10;
     N_boundary = 0;
+    boundCollisionMultiplier = 1;
 }
 
-boundaryManager::boundaryManager(bool Periodic, double L_X, double L_Y)
+boundaryManager::boundaryManager(bool Periodic, double L_X, double L_Y, double collisionMultiplier)
 {
     //ctor
     periodic = Periodic;
     L_x = L_X;
     L_y = L_Y;
     N_boundary = 0;
+    boundCollisionMultiplier = collisionMultiplier;
 }
 
 boundaryManager::~boundaryManager()
@@ -55,6 +57,10 @@ std::vector<person> boundaryManager::placeVerticalBoundaryParticles(double radiu
 
 bool boundaryManager::getPeriodic(){
     return periodic;
+}
+
+double boundaryManager::getCollisionMultiplier(){
+    return boundCollisionMultiplier;
 }
 
 mathVector boundaryManager::getPeriodicPosition(mathVector rawPos){

@@ -23,7 +23,7 @@ PYBIND11_MODULE(CCCpy, m) {
             "Sets information on the individual particles in the system.", "N"_a, "meanR"_a, "sigmaR"_a, 
             "v_0"_a, "sigmaV"_a, "massRadiusRatio"_a)
         .def("setParamBoundaryInformation", &System::setParamBoundaryInformation,
-            "Sets information on the boundaries for the system.", "periodic"_a, "L_x"_a, "L_y"_a, "overlapRatio"_a)
+            "Sets information on the boundaries for the system.", "periodic"_a, "L_x"_a, "L_y"_a, "overlapRatio"_a, "collisionMultiplier"_a)
 
         .def("setParamSysStateCSVDir", &System::setParamSysStateCSVDir,
             "Sets the path to place the PhysParam and particle IC state dump csvs.", "pathToSysStateDir"_a)

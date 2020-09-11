@@ -13,7 +13,7 @@ class boundaryManager
 {
     public:
         boundaryManager();
-        boundaryManager(bool Periodic, double L_X, double L_Y);
+        boundaryManager(bool Periodic, double L_X, double L_Y, double collisionMultiplier);
         virtual ~boundaryManager();
 
         //place a horizontal or vertical wall of boundary particles
@@ -22,6 +22,7 @@ class boundaryManager
 
         //gets
         bool getPeriodic();
+        double getCollisionMultiplier();
 
         //periodic position related functions
         mathVector getPeriodicPosition(mathVector rawPos);
@@ -44,6 +45,8 @@ class boundaryManager
         double L_y;
 
         int N_boundary; // number of boundary particles (ie glued)
+
+        double boundCollisionMultiplier; //force multiplier for collisions against the boundary
 };
 
 #endif // BOUNDARYMANAGER_H

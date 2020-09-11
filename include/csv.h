@@ -35,9 +35,10 @@ class csv
         static void appendCSV(std::vector<std::string> lines); //append information to the singleFile csv
 
         //importing physParam versions
-        static const int currPhysParamVersion = 2; //the current version of physParam
+        static const int currPhysParamVersion = 3; //the current version of physParam
         static physParam extractPhysParamV1(std::vector<std::string> lines);
         static physParam extractPhysParamV2(std::vector<std::string> lines);
+        static physParam extractPhysParamV3(std::vector<std::string> lines);
 
         //exporting physParam
         static std::string getPhysParamCSVLine(physParam param); //generates the actual line for the csv containing physParam data

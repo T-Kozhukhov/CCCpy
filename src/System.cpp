@@ -127,12 +127,13 @@ void System::setParamParticleProperties(int N, double meanR, double sigmaR, doub
     }
 }
 
-void System::setParamBoundaryInformation(bool periodic, double L_x, double L_y, double overlapRatio){
+void System::setParamBoundaryInformation(bool periodic, double L_x, double L_y, double overlapRatio, double CollisionMultiplier){
     if(checkParamEditable()){
         sysParam.periodic = periodic;
         sysParam.L_x = L_x;
         sysParam.L_y = L_y;
         sysParam.overlapRatio = overlapRatio;
+        sysParam.collisionMultiplier = CollisionMultiplier;
     }
 }
 
@@ -293,6 +294,7 @@ void System::writeReadablePhysParam(){
     cmdout::cmdWrite(true, "Debug override. IF NOT 0, uses hardcoded overrides for initial conditions. See docs for more details: "+std::to_string(sysParam.debugType));
     cmdout::cmdWrite(true, "[B] If dumping particle data, do we dump only a single particle to a single file: "+std::to_string(sysParam.dumpSingleParticle));
     cmdout::cmdWrite(true, "Ratio of mass to radius^2, used for calculating mass of particles: "+std::to_string(sysParam.massRadiusRatio));
+    cmdout::cmdWrite(true, "The scaling factor for collisions against the boundary: "+std::to_string(sysParam.collisionMultiplier));
 }
 
 void System::prepareSimulation(){
@@ -305,7 +307,7 @@ void System::prepareSimulation(){
         person::setMassRadiusRatio(sysParam.massRadiusRatio); //set the mass-radius ratio of particles now before any are generated
 
         //handling boundary stuff here
-        bManager = boundaryManager(sysParam.periodic, sysParam.L_x, sysParam.L_y);
+        bManager = boundaryManager(sysParam.periodic, sysParam.L_x, sysParam.L_y, sysParam.collisionMultiplier);
 
         //preparing fManager and tManager by getting the necessary parameters from sysParam
         fManager = force(&bManager, sysParam.zetaActive, sysParam.zetaGround, sysParam.zetaPerson,

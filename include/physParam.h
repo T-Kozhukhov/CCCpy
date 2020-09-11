@@ -27,6 +27,7 @@ struct physParam{
     double L_x;
     double L_y;
     double overlapRatio; //overlap ratio for when "drawing" soft particle walls
+    double collisionMultiplier; //multiplies force when colliding with the boundary
 
     //csv information
     bool loadParticles; // whether to load particles or not
