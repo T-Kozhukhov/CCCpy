@@ -57,6 +57,8 @@ PYBIND11_MODULE(CCCpy, m) {
             "Enable pair dissipation torques for the system.", "xiPair"_a)
         .def("setParamRandNoisyTorque", &System::setParamRandNoisyTorque,
             "Enable a random noisy Gaussian torque on the system.", "sigmaTorque"_a)
+        .def("setParamDirectionCue", &System::setParamDirectonCue,
+            "Enable direction cue along x.", "dirCue"_a)
 
         .def("setParamDebugMode", &System::setParamDebugMode,
             "Set a debug mode for the system. Used for testing exclusively.", "mode"_a)

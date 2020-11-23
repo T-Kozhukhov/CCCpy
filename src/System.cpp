@@ -72,6 +72,7 @@ System::System(){
     sysParam.enableAngularFrictionTorque = false;
     sysParam.enablePairDissipationTorque = false;
     sysParam.enableRandNoisyTorque = false;
+    sysParam.enableDirectionCue = false;
 
     //torque parameters
     sysParam.xiAngular = 6; //angular friction coeff
@@ -79,6 +80,7 @@ System::System(){
     sysParam.zetaPolar = 0; //polar alignment coeff
     sysParam.zetaVelocity = 0; //velocity alignment coeff
     sysParam.sigmaTorque = 0; //SD for the torque resulted from noise
+    sysParam.dirCue = 0; //direction cue along x
 
     //debug parameters
     sysParam.debugType = physParam::None; //see physparam header for full list of debug states
@@ -232,6 +234,13 @@ void System::setParamPairDissipationTorque(double xiPair){
     }
 }
 
+void System::setParamDirectonCue(double dirCue){
+    if(checkParamEditable()){
+        sysParam.enableDirectionCue = true;
+        sysParam.dirCue = dirCue;
+    }
+}
+
 void System::setParamRandNoisyTorque(double sigmaTorque){
     if(checkParamEditable()){
         sysParam.enableRandNoisyTorque = true;
@@ -286,11 +295,13 @@ void System::writeReadablePhysParam(){
     cmdout::cmdWrite(true, "[B] Are angular friction torques enabled: "+std::to_string(sysParam.enableAngularFrictionTorque));
     cmdout::cmdWrite(true, "[B] Are pair dissipation torques enabled: "+std::to_string(sysParam.enablePairDissipationTorque));
     cmdout::cmdWrite(true, "[B] Are random noisy torques enabled: "+std::to_string(sysParam.enableRandNoisyTorque));
+    cmdout::cmdWrite(true, "[B] Is the direction cue enabled: "+std::to_string(sysParam.enableRandNoisyTorque));
     cmdout::cmdWrite(true, "Friction parameter for angular friction torques: "+std::to_string(sysParam.xiAngular));
     cmdout::cmdWrite(true, "Friction parameter for pair dissipation torques: "+std::to_string(sysParam.xiPair));
     cmdout::cmdWrite(true, "Coefficient of polar alignment torques: "+std::to_string(sysParam.zetaPolar));
     cmdout::cmdWrite(true, "Coefficient of velocity alignment torques: "+std::to_string(sysParam.zetaVelocity));
     cmdout::cmdWrite(true, "Standard deviation for random noisy torques: "+std::to_string(sysParam.sigmaTorque));
+    cmdout::cmdWrite(true, "Torque direction cue along x: "+std::to_string(sysParam.dirCue));
     cmdout::cmdWrite(true, "Debug override. IF NOT 0, uses hardcoded overrides for initial conditions. See docs for more details: "+std::to_string(sysParam.debugType));
     cmdout::cmdWrite(true, "[B] If dumping particle data, do we dump only a single particle to a single file: "+std::to_string(sysParam.dumpSingleParticle));
     cmdout::cmdWrite(true, "Ratio of mass to radius^2, used for calculating mass of particles: "+std::to_string(sysParam.massRadiusRatio));
@@ -313,7 +324,7 @@ void System::prepareSimulation(){
         fManager = force(&bManager, sysParam.zetaActive, sysParam.zetaGround, sysParam.zetaPerson,
             sysParam.v_0, sysParam.kHarmonic, sysParam.kHertzian);
         tManager = planarTorque(sysParam.xiAngular, sysParam.xiPair, sysParam.zetaPolar,
-            sysParam.zetaVelocity);
+            sysParam.zetaVelocity,sysParam.dirCue);
 
         //setup of output manager
         vtpDumper = output(sysParam.outFileName, sysParam.outDirPath, sysParam.outFileType, &personList);
@@ -338,6 +349,7 @@ void System::runSimulation(int T, bool dumpVTPdata, bool dumpPartdata){
 
         //do T time steps
         for(int i = 0; i < T; i++){
+            //cmdout::cmdWrite(true,std::to_string(i));
             currTimeStep++;
             step(currTimeStep);
         }
@@ -394,11 +406,14 @@ void System::dumpPartData(){
 
 void System::initParticles(){
     if(sysParam.debugType!=physParam::None){ //If we are in a debug state, then override accordingly
+        cmdout::cmdWrite(true, "Going through debug initialisation.");
         generateDebugParticles();
     } else if(sysParam.loadParticles){ //otherwise, if we are to load particles
+        cmdout::cmdWrite(true, "Reading initial data from CSV file.");
         std::vector<person> tempList = csv::importPList(sysParam.pathToParticles); //load particles into a temp vector
         mergePList(tempList); // merge the temporary list into the main lsit
     } else { //if no loading has been specified, just generate random particles within the domain
+        cmdout::cmdWrite(true, "Creating random particles in the domain.");
         std::vector<person> tempList; //create a temp list
 
         for(int i = 0; i<sysParam.N; i++){ //create N random particles as follows:
@@ -419,11 +434,13 @@ void System::initParticles(){
 void System::step(int t){
     //first, check to see if neighbour lists need to be updated
     if(neighbourList::checkUpdate(&personList, &bManager)){
+        //cmdout::cmdWrite(true,"Updatding neigbhbour list");
         neighbourList::updateLists(&personList, &bManager); //update the neighbour lists if necessary
     }
 
     //loop through all non-glued particles...
     for(unsigned int i = 0; i < personList.size(); i++){
+        //cmdout::cmdWrite(true,"Computing forces and torques for particle" + std::to_string(i));
         if(!personList[i].getGlued()){
             calculateForcesTorques(i); //calculate the forces acting on each non-glued particle
         }
@@ -431,6 +448,7 @@ void System::step(int t){
 
     // perform dynamics for all non-glued particles particles
     for(unsigned int i = 0; i<personList.size(); i++){
+        //cmdout::cmdWrite(true,"Updating positions for particle" + std::to_string(i));
         if(!personList[i].getGlued()) {
             personList[i].update(sysParam.stepSize, &bManager); //if not glued, update each particle
         }

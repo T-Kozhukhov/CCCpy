@@ -8,7 +8,7 @@ class planarTorque //Gives torque in the plane, ie z component
 {
     public:
         planarTorque();
-        planarTorque(double XiAngular, double XiPair, double ZetaPolar, double ZetaVelocity);
+        planarTorque(double XiAngular, double XiPair, double ZetaPolar, double ZetaVelocity, double dirCue);
         virtual ~planarTorque();
 
         double computePolarAlignmentTorque(person* p_i, person* p_j); //computes torque by forcing alignment with polarity
@@ -17,7 +17,10 @@ class planarTorque //Gives torque in the plane, ie z component
         double computeAngularFrictionTorque(person* p_i); //dumb friction to angular velocity
         double computePairDissipationTorque(person* p_i, person* p_j); //dissipation friction with neighbouring angular velocities
 
+        double computeDirectionCue(person* p_i); // direction cue along x only
+
         double randNoisyTorque(RNG *sysRNG, double sigma);// returns a random torque centered on zero with SD sigma
+
 
         //auxiliary functions
         double generateZTorque(mathVector F, mathVector pos); // performs cross product, sets zTorque and also returns it.
@@ -25,6 +28,7 @@ class planarTorque //Gives torque in the plane, ie z component
     private:
         double xiAngular; //angular friction coeff
         double xiPair; //pair dissipation coeff
+        double dirCue; // direction cue strength
 
         double zetaPolar; //polar alignment coeff
         double zetaVelocity; //velocity alignment coeff

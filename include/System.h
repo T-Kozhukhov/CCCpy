@@ -44,6 +44,7 @@ class System
         void setParamAngularFrictionTorque(double xiAngular);
         void setParamPairDissipationTorque(double xiPair);
         void setParamRandNoisyTorque(double sigmaTorque);
+        void setParamDirectonCue(double dirCue);
         
         void setParamDebugMode(int mode); // used for setting up simulations into specific debug states
         

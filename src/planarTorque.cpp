@@ -12,12 +12,13 @@ planarTorque::~planarTorque()
     //dtorS
 }
 
-planarTorque::planarTorque(double XiAngular, double XiPair, double ZetaPolar, double ZetaVelocity){
+planarTorque::planarTorque(double XiAngular, double XiPair, double ZetaPolar, double ZetaVelocity, double DirCue){
     // set member variables accordingly
     xiAngular = XiAngular;
     xiPair = XiPair;
     zetaPolar = ZetaPolar;
     zetaVelocity = ZetaVelocity;
+    dirCue = DirCue;
 }
 
 
@@ -48,6 +49,12 @@ double planarTorque::computePairDissipationTorque(person* p_i, person* p_j){
     double polVelDiff = polVel_i-polVel_j; //gets the difference in polar velocities between the two particles
 
     return -1*xiPair*polVelDiff;
+}
+
+// direction cue is along x, i.e. its angle is 0 by default
+double planarTorque::computeDirectionCue(person* p_i){
+    double pol_i = p_i->getPolAngle();
+    return -1*dirCue*std::sin(pol_i);
 }
 
 double planarTorque::randNoisyTorque(RNG *sysRNG, double sigma){

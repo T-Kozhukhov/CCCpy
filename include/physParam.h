@@ -61,6 +61,7 @@ struct physParam{
     bool enableAngularFrictionTorque;
     bool enablePairDissipationTorque;
     bool enableRandNoisyTorque;
+    bool enableDirectionCue;
 
     //torque parameters
     double xiAngular; //angular friction coeff
@@ -68,6 +69,7 @@ struct physParam{
     double zetaPolar; //polar alignment coeff
     double zetaVelocity; //velocity alignment coeff
     double sigmaTorque; //SD for the torque resulted from noise
+    double dirCue; // directional cue strength anlong x
 
     //debug parameters
     int debugType; //what type of debugging is occurring. Use one of the below enums only.
